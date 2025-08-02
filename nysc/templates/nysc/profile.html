@@ -1,0 +1,161 @@
+{% extends 'nysc/base.html' %}
+{% block title %}{{ profile.user.username }}'s Profile - Corps Connect{% endblock %}
+{% block content %}
+{% load static %}
+
+<section class="py-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="profile-card">
+                    <div class="card-image">
+                        {% if profile.profile_picture %}
+                            <img src="{{ profile.profile_picture.url }}" alt="{{ profile.user.username }}'s Profile Picture">
+                        {% else %}
+                            <div class="default-avatar">{{ request.user.username|first|upper }}</div>
+                        {% endif %}
+                    </div>
+                    <ul class="social-icons">
+                        <li>
+                            {% if profile.facebook_url %}
+                                <a href="{{ profile.facebook_url }}" target="_blank"><i class="fab fa-facebook-f"></i></a>
+                            {% else %}
+                                <a href="#" class="disabled"><i class="fab fa-facebook-f"></i></a>
+                            {% endif %}
+                        </li>
+                        <li>
+                            {% if profile.twitter_url %}
+                                <a href="{{ profile.twitter_url }}" target="_blank"><i class="fab fa-twitter"></i></a>
+                            {% else %}
+                                <a href="#" class="disabled"><i class="fab fa-twitter"></i></a>
+                            {% endif %}
+                        </li>
+                    </ul>
+                    <div class="details">
+                        <h2>{{ profile.user.username }}<br>
+                            <span class="job-title">
+                                {% if profile.bio %}
+                                    {{ profile.bio|truncatewords:5 }}
+                                {% else %}
+                                    No bio provided
+                                {% endif %}
+                            </span>
+                        </h2>
+                    </div>
+                </div>
+                <!-- Follow/Unfollow Button -->
+                {% if request.user.is_authenticated and not is_owner %}
+                    <div class="text-center mt-3">
+                        <button id="follow-btn" class="btn {% if is_following %}btn-outline-danger{% else %}btn-primary{% endif %} btn-lg" data-username="{{ profile.user.username }}" data-action="{% if is_following %}unfollow{% else %}follow{% endif %}">
+                            {% if is_following %}
+                                <i class="fas fa-user-minus"></i> Unfollow
+                            {% else %}
+                                <i class="fas fa-user-plus"></i> Follow
+                            {% endif %}
+                        </button>
+                    </div>
+                {% endif %}
+                <!-- Stats Section -->
+                <div class="stats d-flex justify-content-center gap-3 mt-3 mb-4">
+                    <div class="stat-item">
+                        <i class="fas fa-file-alt"></i>
+                        <span>{{ posts_count }} Post{{ posts_count|pluralize }}</span>
+                    </div>
+                    <div class="stat-item">
+                        <i class="fas fa-users"></i>
+                        <span id="followers-count">{{ followers_count }} Follower{{ followers_count|pluralize }}</span>
+                    </div>
+                    <div class="stat-item">
+                        <i class="fas fa-user-friends"></i>
+                        <span>{{ following_count }} Following</span>
+                    </div>
+                </div>
+                {% if is_owner %}
+                    <div class="text-center mb-3">
+                        <a href="{% url 'profile_edit' %}" class="btn btn-primary">Edit Profile</a>
+                    </div>
+                {% endif %}
+                <div class="card mt-4">
+                    <div class="card-body">
+                        <h2 class="h4 mb-3">Posted PPAs</h2>
+                        {% if ppas.exists %}
+                            <ul class="list-group">
+                                {% for ppa in ppas %}
+                                    <li class="list-group-item">
+                                        <div class="d-flex justify-content-between align-items-center w-100">
+                                            <div>
+                                                <a href="{% url 'ppa_detail' ppa.id %}" class="text-decoration-none" data-ppa-name="{{ ppa.name }}">
+                                                    {{ ppa.name }}
+                                                    {% if ppa.verified %}
+                                                        <i class="fas fa-check-circle text-primary verified-icon" data-bs-toggle="tooltip" data-bs-custom-class="custom-tooltip" title="This PPA is verified"></i>
+                                                    {% endif %}
+                                                </a>
+                                                <small class="text-muted d-block">({{ ppa.state }}, {{ ppa.lga }}) - {{ ppa.created_at|date:"F d, Y" }}</small>
+                                            </div>
+                                            {% if is_owner %}
+                                                <div class="btn-group" role="group">
+                                                    <div class="dropdown">
+                                                        <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                                            <i class="fas fa-ellipsis-v"></i>
+                                                        </button>
+                                                        <ul class="dropdown-menu dropdown-menu-end">
+                                                            <li><a class="dropdown-item" href="{% url 'ppa_edit' ppa.id %}">Edit</a></li>
+                                                            {% if ppa.verification_status == 'pending' %}
+                                                                <li><button class="dropdown-item pending-btn" data-bs-toggle="modal" data-bs-target="#verifyPPA_{{ ppa.id }}" title="Check status or resubmit if allowed">Pending</button></li>
+                                                            {% elif ppa.verification_status == 'rejected' %}
+                                                                <li><button class="dropdown-item" data-bs-toggle="modal" data-bs-target="#verifyPPA_{{ ppa.id }}">Resubmit</button></li>
+                                                            {% elif ppa.verification_status == 'not_submitted' %}
+                                                                <li><button class="dropdown-item" data-bs-toggle="modal" data-bs-target="#verifyPPA_{{ ppa.id }}">Verify</button></li>
+                                                            {% elif ppa.verification_status == 'approved' %}
+                                                                <li><span class="dropdown-item disabled text-success">Verified</span></li>
+                                                            {% endif %}
+                                                            <li><a class="dropdown-item text-danger delete-ppa" href="#" data-ppa-id="{{ ppa.id }}">Delete</a></li>
+                                                        </ul>
+                                                    </div>
+                                                </div>
+                                                <!-- Verification Modal -->
+                                                <div class="modal fade" id="verifyPPA_{{ ppa.id }}" tabindex="-1" aria-labelledby="verifyPPA_{{ ppa.id }}Label" aria-hidden="true">
+                                                    <div class="modal-dialog">
+                                                        <div class="modal-content">
+                                                            <div class="modal-header">
+                                                                <h5 class="modal-title" id="verifyPPA_{{ ppa.id }}Label">
+                                                                    {% if ppa.verification_status == 'pending' %}Verification Status{% elif ppa.verification_status == 'rejected' %}Resubmit Verification{% else %}Verify PPA{% endif %}: {{ ppa.name }}
+                                                                </h5>
+                                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                            </div>
+                                                            <div class="modal-body">
+                                                                {% if ppa.verification_status == 'pending' %}
+                                                                    <p>Verification is in progress. No action is needed at this time. You will be notified when reviewed.</p>
+                                                                    <p class="text-muted">If you need to resubmit (e.g., after a long delay), upload a new document below.</p>
+                                                                {% elif ppa.verification_status == 'rejected' %}
+                                                                    <p>Your previous verification was rejected. Please upload a new PPA posting letter or a clear photo of the PPA.</p>
+                                                                {% else %}
+                                                                    <p>Upload your PPA posting letter or a clear photo of the PPA to request verification. This will be reviewed by an admin.</p>
+                                                                {% endif %}
+                                                                <form id="verifyForm_{{ ppa.id }}" enctype="multipart/form-data">
+                                                                    {% csrf_token %}
+                                                                    <div class="mb-3">
+                                                                        <label for="verification_document_{{ ppa.id }}" class="form-label">Verification Document</label>
+                                                                        <input type="file" class="form-control" id="verification_document_{{ ppa.id }}" name="verification_document" accept="image/*" {% if ppa.verification_status == 'pending' %}disabled{% endif %}>
+                                                                    </div>
+                                                                    <button type="submit" class="btn btn-primary" {% if ppa.verification_status == 'pending' %}disabled{% endif %}>Submit for Verification</button>
+                                                                </form>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        {% else %}
+                            <p class="text-muted">No PPAs posted yet.</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

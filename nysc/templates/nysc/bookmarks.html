@@ -1,0 +1,129 @@
+{% extends 'nysc/base.html' %}
+{% load static %}
+
+{% block title %}My Bookmarks - NYSC Connect{% endblock %}
+
+{% block content %}
+<div class="container maincontent">
+    <h2 class="h3 mb-4" style="color: var(--card-text);">My Bookmarks</h2>
+    {% if bookmarks %}
+        <div class="row row-cols-1 row-cols-md-3 g-4">
+            {% for bookmark in bookmarks %}
+                <div class="col">
+                    <div class="card h-100" style="background-color: var(--card-bg); border-color: var(--card-border);">
+                        <img src="{% if bookmark.ppa.image %}{{ bookmark.ppa.image.url }}{% else %}https://via.placeholder.com/300x200{% endif %}" class="card-img-top" alt="{{ bookmark.ppa.name }} image" loading="lazy">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ bookmark.ppa.name }}</h5>
+                            <p class="card-text">
+                                <strong>Location:</strong> {{ bookmark.ppa.state }} - {{ bookmark.ppa.lga }}<br>
+                                <strong>Rating:</strong>
+                                <span class="text-warning">
+                                    {% for i in "12345" %}
+                                        {% if forloop.counter0 < bookmark.ppa.avg_rating|floatformat:0 %}★{% else %}☆{% endif %}
+                                    {% endfor %}
+                                </span>
+                                {{ bookmark.ppa.avg_rating|floatformat:1 }} stars
+                            </p>
+                            <div class="d-flex align-items-center mt-3">
+                                <a href="{% url 'ppa_detail' bookmark.ppa.id %}" class="btn btn-primary me-2" aria-label="View {{ bookmark.ppa.name }} details">View Details</a>
+                                <button class="bookmark-btn" data-ppa-id="{{ bookmark.ppa.id }}" aria-label="Bookmark {{ bookmark.ppa.name }}">
+                                    <i class="fa-bookmark {% if request.user.is_authenticated and bookmark.ppa in request.user.bookmarks.all %}fas{% else %}far{% endif %}" aria-hidden="true"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p class="text-center">You have no bookmarked PPAs. Start bookmarking PPAs on the PPA Finder page!</p>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{% static 'nysc/js/ppa_finder.js' %}"></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value;
+
+    function updateBookmarkStatus() {
+        if ('{{ user.is_authenticated }}' !== 'True') return;
+
+        document.querySelectorAll('.bookmark-btn').forEach(button => {
+            const ppaId = button.getAttribute('data-ppa-id');
+            const icon = button.querySelector('i');
+            fetch(`/ppa/${ppaId}/check-bookmark/`, {
+                method: 'GET',
+                headers: { 'X-CSRFToken': csrfToken, 'X-Requested-With': 'XMLHttpRequest' }
+            })
+            .then(response => {
+                if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+                return response.json();
+            })
+            .then(data => {
+                if (data.is_bookmarked) {
+                    icon.classList.remove('far');
+                    icon.classList.add('fas');
+                } else {
+                    icon.classList.remove('fas');
+                    icon.classList.add('far');
+                }
+            })
+            .catch(error => console.error(`Error checking bookmark for PPA ${ppaId}:`, error));
+        });
+    }
+
+    updateBookmarkStatus();
+
+    document.querySelectorAll('.bookmark-btn').forEach(button => {
+        button.addEventListener('click', (e) => {
+            e.preventDefault();
+            if ('{{ user.is_authenticated }}' !== 'True') {
+                window.showNotification('Please log in to bookmark PPAs.', 'error');
+                return;
+            }
+            if (!csrfToken) {
+                console.error('CSRF token not found');
+                window.showNotification('CSRF token missing. Please reload the page.', 'error');
+                return;
+            }
+            const ppaId = button.getAttribute('data-ppa-id');
+            const icon = button.querySelector('i');
+
+            fetch(`/ppa/${ppaId}/toggle-bookmark/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRFToken': csrfToken
+                },
+                body: JSON.stringify({})
+            })
+            .then(response => {
+                if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+                return response.json();
+            })
+            .then(data => {
+                if (data.status === 'success') {
+                    if (data.action === 'added') {
+                        icon.classList.remove('far');
+                        icon.classList.add('fas');
+                    } else if (data.action === 'removed') {
+                        icon.classList.remove('fas');
+                        icon.classList.add('far');
+                    }
+                    window.showNotification(data.message, data.tags || 'info');
+                } else {
+                    window.showNotification('Failed to update bookmark.', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Bookmark error:', error);
+                window.showNotification('An error occurred while updating the bookmark.', 'error');
+            });
+        });
+    });
+});
+</script>
+{% endblock %}

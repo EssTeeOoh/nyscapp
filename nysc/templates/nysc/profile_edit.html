@@ -1,0 +1,132 @@
+{% extends 'nysc/base.html' %}
+{% block title %}Edit Profile - Corps Connect{% endblock %}
+{% block content %}
+{% load static %}
+{% load form_tags %}
+
+<section class="py-5" aria-label="Edit Profile Section">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="profile-edit-card">
+                    <div class="card-image">
+                        {% if request.user.profile.profile_picture %}
+                            <img src="{{ request.user.profile.profile_picture.url }}" alt="Profile Picture" class="rounded-circle" loading="lazy">
+                        {% else %}
+                            <div class="default-avatar">{{ request.user.username|first|upper }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="card-body">
+                        <h1 class="h3 mb-3">Edit Profile</h1>
+                        {% if messages %}
+                            <div class="mb-3">
+                                {% for message in messages %}
+                                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                                        {{ message }}
+                                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        <form method="post" enctype="multipart/form-data" class="needs-validation" novalidate>
+                            {% csrf_token %}
+                            <div class="mb-3">
+                                <label for="{{ user_form.username.id_for_label }}" class="form-label">Username</label>
+                                {{ user_form.username|add_attrs:"class:form-control" }}
+                                <div class="form-text">Enter your desired username.</div>
+                                {% if user_form.username.errors %}
+                                    <div class="invalid-feedback d-block">{{ user_form.username.errors|striptags }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="mb-3">
+                                <label for="{{ profile_form.profile_picture.id_for_label }}" class="form-label">Profile Picture</label>
+                                {{ profile_form.profile_picture|add_attrs:"class:form-control" }}
+                                <div class="form-text">Upload a clear image (JPEG/PNG, max 2MB).</div>
+                                {% if profile_form.profile_picture.errors %}
+                                    <div class="invalid-feedback d-block">{{ profile_form.profile_picture.errors|striptags }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="mb-3">
+                                <label for="{{ profile_form.bio.id_for_label }}" class="form-label">Bio</label>
+                                {{ profile_form.bio|add_attrs:"class:form-control" }}
+                                {% if profile_form.bio.errors %}
+                                    <div class="invalid-feedback d-block">{{ profile_form.bio.errors|striptags }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="mb-3">
+                                <label for="{{ profile_form.twitter_url.id_for_label }}" class="form-label">Twitter/X URL</label>
+                                {{ profile_form.twitter_url|add_attrs:"class:form-control" }}
+                                <div class="form-text">Enter your Twitter or X profile URL (e.g., https://twitter.com/username).</div>
+                                {% if profile_form.twitter_url.errors %}
+                                    <div class="invalid-feedback d-block">{{ profile_form.twitter_url.errors|striptags }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="mb-3">
+                                <label for="{{ profile_form.facebook_url.id_for_label }}" class="form-label">Facebook URL</label>
+                                {{ profile_form.facebook_url|add_attrs:"class:form-control" }}
+                                <div class="form-text">Enter your Facebook profile URL (e.g., https://facebook.com/username).</div>
+                                {% if profile_form.facebook_url.errors %}
+                                    <div class="invalid-feedback d-block">{{ profile_form.facebook_url.errors|striptags }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="form-check mb-3">
+                                {{ profile_form.is_public }}
+                                <label class="form-check-label" for="{{ profile_form.is_public.id_for_label }}">
+                                    Appear on Leaderboard
+                                </label>
+                                <div class="form-text">Uncheck to opt out of the leaderboard.</div>
+                                {% if profile_form.is_public.errors %}
+                                    <div class="invalid-feedback d-block">{{ profile_form.is_public.errors|striptags }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="mt-4">
+                                <h4 class="h5 mb-3">Notification Preferences</h4>
+                                <div class="form-check mb-2">
+                                    {{ profile_form.notify_follow }}
+                                    <label class="form-check-label" for="{{ profile_form.notify_follow.id_for_label }}">
+                                        Notify when someone follows me
+                                    </label>
+                                    {% if profile_form.notify_follow.errors %}
+                                        <div class="invalid-feedback d-block">{{ profile_form.notify_follow.errors|striptags }}</div>
+                                    {% endif %}
+                                </div>
+                                <div class="form-check mb-2">
+                                    {{ profile_form.notify_rating }}
+                                    <label class="form-check-label" for="{{ profile_form.notify_rating.id_for_label }}">
+                                        Notify when a post is rated
+                                    </label>
+                                    {% if profile_form.notify_rating.errors %}
+                                        <div class="invalid-feedback d-block">{{ profile_form.notify_rating.errors|striptags }}</div>
+                                    {% endif %}
+                                </div>
+                                <div class="form-check mb-2">
+                                    {{ profile_form.notify_leaderboard }}
+                                    <label class="form-check-label" for="{{ profile_form.notify_leaderboard.id_for_label }}">
+                                        Notify when I appear on the leaderboard
+                                    </label>
+                                    {% if profile_form.notify_leaderboard.errors %}
+                                        <div class="invalid-feedback d-block">{{ profile_form.notify_leaderboard.errors|striptags }}</div>
+                                    {% endif %}
+                                </div>
+                                <div class="form-check mb-3">
+                                    {{ profile_form.notify_post }}
+                                    <label class="form-check-label" for="{{ profile_form.notify_post.id_for_label }}">
+                                        Notify when someone I follow posts
+                                    </label>
+                                    {% if profile_form.notify_post.errors %}
+                                        <div class="invalid-feedback d-block">{{ profile_form.notify_post.errors|striptags }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <div class="d-grid mt-3">
+                                <button type="submit" class="btn btn-primary" aria-label="Save Changes">Save Changes</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

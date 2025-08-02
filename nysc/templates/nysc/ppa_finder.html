@@ -1,0 +1,477 @@
+{% extends 'nysc/base.html' %}
+{% load static %}
+{% load form_tags %}
+
+{% block title %}PPA Finder - NYSC Connect{% endblock %}
+
+{% block content %}
+<section class="py-5">
+    <div class="container maincontent">
+        {% if messages %}
+            <div class="mt-3">
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <!-- Filter Form (State display removed but logic retained) -->
+        <form method="get" id="ppaSearchForm" class="row g-3 align-items-end filter-form">
+            <div class="col-12 col-md-3 mb-3">
+                <label for="{{ form.state.id_for_label }}" class="form-label" style="color: var(--card-text);">State</label>
+                {{ form.state|add_attrs:"class:form-control" }}
+            </div>
+            <div class="col-12 col-md-3 mb-3">
+                <label for="{{ form.lga.id_for_label }}" class="form-label" style="color: var(--card-text);">LGA</label>
+                {{ form.lga|add_attrs:"class:form-control" }}
+                <div id="lga-loading" class="spinner-border spinner-border-sm text-primary d-none mt-2" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+            </div>
+            <div class="col-12 col-md-3 mb-3">
+                <label for="{{ form.sector.id_for_label }}" class="form-label" style="color: var(--card-text);">Sector</label>
+                {{ form.sector|add_attrs:"class:form-control" }}
+            </div>
+            <div class="col-12 col-md-3 mb-3">
+                <label for="{{ form.min_stipend.id_for_label }}" class="form-label" style="color: var(--card-text);">Minimum Stipend</label>
+                {{ form.min_stipend|add_attrs:"class:form-control" }}
+            </div>
+            <div class="col-12 col-md-3 mb-3">
+                <label for="{{ form.accommodation.id_for_label }}" class="form-label" style="color: var(--card-text);">Accommodation</label>
+                {{ form.accommodation|add_attrs:"class:form-control" }}
+            </div>
+            <div class="col-12 text-center">
+                <button type="submit" class="btn btn-primary mt-3 px-4 py-2" style="background-color: var(--btn-primary-bg); color: var(--btn-primary-text); border: none; border-radius: 5px; transition: background-color 0.3s ease;" aria-label="Search PPAs">
+                    Search
+                </button>
+            </div>
+        </form>
+
+        <div class="mt-4">
+            <h2 class="h3 mb-4" style="color: var(--card-text);">
+                {% if user_state and not ppas and not request.GET %}Recommended PPAs in {{ user_state }}{% else %}Recommended PPAs{% endif %}
+            </h2>
+            <div id="ppa-container" class="row row-cols-1 row-cols-md-3 g-4">
+                {% for ppa in ppas %}
+                    <div class="col">
+                        <div class="card h-100" style="background-color: var(--card-bg); border-color: var(--card-border);">
+                            <img src="{% if ppa.image %}{{ ppa.image.url }}{% else %}https://via.placeholder.com/300x200{% endif %}" class="card-img-top" alt="{{ ppa.name }} image" loading="lazy">
+                            <div class="card-body">
+                                <h5 class="card-title">
+                                    {{ ppa.name }}
+                                    {% if ppa.verified %}
+                                        <i class="fas fa-check-circle text-primary verified-icon" data-bs-toggle="tooltip" data-bs-custom-class="custom-tooltip" title="This PPA is verified"></i>
+                                    {% endif %}
+                                </h5>
+                                <p class="card-text">
+                                    <strong>Sector:</strong> {{ ppa.sector }}<br>
+                                    {% if ppa.stipend %}<strong>Stipend:</strong> ₦{{ ppa.stipend }}<br>{% endif %}
+                                    {% if ppa.accommodation_available is not None %}
+                                        <strong>Accommodation:</strong> {{ ppa.accommodation_available|yesno:"Yes,No" }}<br>
+                                    {% else %}
+                                        <strong>Accommodation:</strong> Not Sure<br>
+                                    {% endif %}
+                                    <strong>Location:</strong> {{ ppa.state }} - {{ ppa.lga }}<br>
+                                    <strong>Address:</strong>
+                                    {% if ppa.address %}
+                                        <a href="https://www.google.com/maps/search/?api=1&query={{ ppa.address|urlencode }}" target="_blank" rel="noopener noreferrer">{{ ppa.address }}</a>
+                                    {% else %}N/A{% endif %}<br>
+                                    <strong>Rating:</strong>
+                                    <span class="text-warning">
+                                        {% for i in "12345" %}
+                                            {% if forloop.counter0 < ppa.avg_rating|floatformat:0 %}★{% else %}☆{% endif %}
+                                        {% endfor %}
+                                    </span>
+                                    {{ ppa.avg_rating|floatformat:1 }} stars
+                                </p>
+                                <div class="d-flex align-items-center mt-3">
+                                    <a href="{% url 'ppa_detail' ppa.id %}" class="btn btn-secondary me-2" aria-label="View {{ ppa.name }} details">View Details</a>
+                                    <button class="bookmark-btn" data-ppa-id="{{ ppa.id }}" aria-label="Bookmark {{ ppa.name }}">
+                                        <i class="fa-bookmark {% if request.user.is_authenticated and ppa in request.user.bookmarks.all %}fas{% else %}far{% endif %}" aria-hidden="true"></i>
+                                    </button>
+                                    {% if ppa.posted_by %}
+                                        <span class="d-flex align-items-center ms-auto">
+                                            <div class="author-avatar me-2">
+                                                {% if ppa.posted_by.profile.profile_picture %}
+                                                    <img src="{{ ppa.posted_by.profile.profile_picture.url }}" alt="{{ ppa.posted_by.username }}'s avatar" loading="lazy" style="width: 30px; height: 30px; object-fit: cover; border-radius: 50%;">
+                                                {% else %}
+                                                    <div class="default-author-avatar" style="width: 30px; height: 30px; background: var(--default-avatar-bg); color: var(--default-avatar-text); display: flex; align-items: center; justify-content: center; font-size: 16px; border-radius: 50%;">{{ ppa.posted_by.username|first|upper }}</div>
+                                                {% endif %}
+                                            </div>
+                                            <a href="{% url 'profile_view' ppa.posted_by.username %}" class="text-primary" style="text-decoration: none;">{{ ppa.posted_by.username }}</a>
+                                        </span>
+                                    {% else %}
+                                        <span class="text-muted ms-auto">Unknown Author</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% empty %}
+                    <div class="col-12 text-center">
+                        <p>No recommended PPAs found. <a href="{% url 'submit_ppa' %}" class="btn btn-outline-primary" aria-label="Submit a PPA">Submit a PPA!</a></p>
+                    </div>
+                {% endfor %}
+            </div>
+            {% if is_paginated %}
+                <div class="d-flex justify-content-center mt-4 align-items-center" id="pagination-controls">
+                    <button id="prev-btn" class="btn btn-secondary me-2 {% if not page_obj.has_previous %}disabled{% endif %}"><<</button>
+                    <span id="page-number" style="margin: 0 10px; color: var(--card-text);">Page {{ page_obj.number }} of {{ paginator.num_pages }}</span>
+                    <button id="next-btn" class="btn btn-secondary {% if not page_obj.has_next %}disabled{% endif %}">>></button>
+                </div>
+            {% endif %}
+        </div>
+
+        <section class="py-5">
+            <h2 class="h3 mb-4" style="color: var(--card-text);">Featured PPAs (Highly Rated)</h2>
+            {% if featured_ppas %}
+                <div class="row row-cols-1 row-cols-md-3 g-4"> <!-- Ensure g-4 is applied -->
+                    {% for ppa in featured_ppas|slice:":3" %}
+                        <div class="col">
+                            <div class="card h-100" style="background-color: var(--card-bg); border-color: var(--card-border);">
+                                <img src="{% if ppa.image %}{{ ppa.image.url }}{% else %}https://via.placeholder.com/300x200{% endif %}" class="card-img-top" alt="{{ ppa.name }} image" loading="lazy">
+                                <div class="card-body">
+                                    <h5 class="card-title">
+                                        {{ ppa.name }}
+                                        {% if ppa.verified %}
+                                            <i class="fas fa-check-circle text-primary verified-icon" data-bs-toggle="tooltip" data-bs-custom-class="custom-tooltip" title="This PPA is verified"></i>
+                                        {% endif %}
+                                    </h5>
+                                    <p class="card-text">
+                                        <strong>Location:</strong> {{ ppa.state }} - {{ ppa.lga }}<br>
+                                        {% if ppa.stipend %}<strong>Stipend:</strong> ₦{{ ppa.stipend }}<br>{% endif %}
+                                        {% if ppa.accommodation_available is not None %}
+                                            <strong>Accommodation:</strong> {{ ppa.accommodation_available|yesno:"Yes,No" }}<br>
+                                        {% else %}
+                                            <strong>Accommodation:</strong> Not Sure<br>
+                                        {% endif %}
+                                        <strong>Rating:</strong>
+                                        <span class="text-warning">
+                                            {% for i in "12345" %}
+                                                {% if forloop.counter0 < ppa.avg_rating|floatformat:0 %}★{% else %}☆{% endif %}
+                                            {% endfor %}
+                                        </span>
+                                        {{ ppa.avg_rating|floatformat:1 }} stars
+                                    </p>
+                                    <div class="d-flex align-items-center mt-3">
+                                        <a href="{% url 'ppa_detail' ppa.id %}" class="btn btn-primary me-2" aria-label="View {{ ppa.name }} details">View Details</a>
+                                        <button class="bookmark-btn" data-ppa-id="{{ ppa.id }}" aria-label="Bookmark {{ ppa.name }}">
+                                            <i class="fa-bookmark {% if request.user.is_authenticated and ppa in request.user.bookmarks.all %}fas{% else %}far{% endif %}" aria-hidden="true"></i>
+                                        </button>
+                                        {% if ppa.posted_by %}
+                                            <span class="d-flex align-items-center ms-auto">
+                                                <div class="author-avatar me-2">
+                                                    {% if ppa.posted_by.profile.profile_picture %}
+                                                        <img src="{{ ppa.posted_by.profile.profile_picture.url }}" alt="{{ ppa.posted_by.username }}'s avatar" loading="lazy" style="width: 30px; height: 30px; object-fit: cover; border-radius: 50%;">
+                                                    {% else %}
+                                                        <div class="default-author-avatar" style="width: 30px; height: 30px; background: var(--default-avatar-bg); color: var(--default-avatar-text); display: flex; align-items: center; justify-content: center; font-size: 16px; border-radius: 50%;">{{ ppa.posted_by.username|first|upper }}</div>
+                                                    {% endif %}
+                                                </div>
+                                                <a href="{% url 'profile_view' ppa.posted_by.username %}" class="text-primary" style="text-decoration: none;">{{ ppa.posted_by.username }}</a>
+                                            </span>
+                                        {% else %}
+                                            <span class="text-muted ms-auto">Unknown Author</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p class="text-center">No highly rated PPAs available.</p>
+            {% endif %}
+        </section>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{% static 'nysc/js/ppa_finder.js' %}"></script>
+<script>
+    let availableStates = {{ states|safe }};
+    console.log('Available states loaded:', availableStates);
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const stateSelect = document.getElementById('{{ form.state.id_for_label }}');
+        const ppaSearchForm = document.getElementById('ppaSearchForm');
+        const ppaContainer = document.getElementById('ppa-container');
+        const paginationControls = document.getElementById('pagination-controls');
+        const pageNumber = document.getElementById('page-number');
+        const lgaSelect = document.getElementById('{{ form.lga.id_for_label }}');
+        const lgaLoading = document.getElementById('lga-loading');
+
+        if (!stateSelect || !ppaSearchForm || !ppaContainer || !paginationControls || !pageNumber || !lgaSelect || !lgaLoading) {
+            console.error('Missing DOM elements:', {
+                stateSelect: !!stateSelect,
+                ppaSearchForm: !!ppaSearchForm,
+                ppaContainer: !!ppaContainer,
+                paginationControls: !!paginationControls,
+                pageNumber: !!pageNumber,
+                lgaSelect: !!lgaSelect,
+                lgaLoading: !!lgaLoading
+            });
+            return;
+        }
+
+        // Automatic geolocation on page load (logic retained, display removed)
+        if (!sessionStorage.getItem('locationDetected')) {
+            console.log('Attempting automatic geolocation...');
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        const lat = position.coords.latitude;
+                        const lon = position.coords.longitude;
+                        console.log('Geolocation success:', { lat, lon });
+
+                        fetch('/set_user_state/', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRFToken': '{{ csrf_token }}'
+                            },
+                            body: JSON.stringify({ lat, lon })
+                        })
+                        .then(response => {
+                            console.log('Fetch response status:', response.status);
+                            if (!response.ok) {
+                                console.error('Server error:', response.statusText);
+                                throw new Error(`HTTP error! status: ${response.status}`);
+                            }
+                            return response.text();
+                        })
+                        .then(text => {
+                            console.log('Raw response:', text);
+                            const data = JSON.parse(text);
+                            console.log('Parsed response:', data);
+                            if (data.status === 'success' && data.state) {
+                                sessionStorage.setItem('locationDetected', 'true');
+                                sessionStorage.setItem('savedState', data.state);
+                                stateSelect.value = data.state;
+                                ppaSearchForm.submit();
+                            } else {
+                                console.warn('Geolocation failed to set state:', data.message);
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Fetch error:', error.message || error);
+                        });
+                    },
+                    (error) => {
+                        console.error('Geolocation error:', error.message || error);
+                    }
+                );
+            } else {
+                console.error('Geolocation is not supported by this browser.');
+            }
+        } else {
+            console.log('Location already detected, skipping geolocation.');
+            const savedState = sessionStorage.getItem('savedState');
+            if (savedState) {
+                stateSelect.value = savedState;
+                if (!window.location.search) {
+                    ppaSearchForm.submit();
+                }
+            }
+        }
+
+        // Tooltip initialization
+        const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+        const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => 
+            new bootstrap.Tooltip(tooltipTriggerEl, { customClass: 'custom-tooltip', trigger: 'click' })
+        );
+
+        document.addEventListener('click', (e) => {
+            tooltipList.forEach(tooltip => {
+                if (!tooltip._element.contains(e.target)) {
+                    tooltip.hide();
+                }
+            });
+        });
+
+        // LGA population logic
+        function populateLgas(selectedState) {
+            lgaSelect.innerHTML = '<option value="">All LGAs</option>';
+            lgaLoading.classList.remove('d-none');
+            if (selectedState) {
+                fetch('/static/nysc/json/nigeria_lgas.json')
+                    .then(response => {
+                        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                        return response.json();
+                    })
+                    .then(data => {
+                        const lgas = selectedState && data[selectedState] ? data[selectedState] : [];
+                        lgas.forEach(lga => {
+                            const option = document.createElement('option');
+                            option.value = lga;
+                            option.textContent = lga;
+                            lgaSelect.appendChild(option);
+                        });
+                        lgaLoading.classList.add('d-none');
+                        const urlParams = new URLSearchParams(window.location.search);
+                        const lgaParam = urlParams.get('lga');
+                        if (lgaParam && lgaSelect.querySelector(`option[value="${lgaParam}"]`)) {
+                            lgaSelect.value = lgaParam;
+                            console.log('Set LGA from URL:', lgaParam);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error fetching LGAs:', error);
+                        lgaLoading.classList.add('d-none');
+                    });
+            } else {
+                lgaLoading.classList.add('d-none');
+            }
+        }
+
+        stateSelect.addEventListener('change', () => populateLgas(stateSelect.value));
+        populateLgas(stateSelect.value);
+
+        // Bookmark logic with event delegation
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value;
+
+        function updateBookmarkStatus() {
+            if ('{{ user.is_authenticated }}' !== 'True') return;
+
+            document.querySelectorAll('.bookmark-btn').forEach(button => {
+                const ppaId = button.getAttribute('data-ppa-id');
+                const icon = button.querySelector('i');
+                fetch(`/ppa/${ppaId}/check-bookmark/`, {
+                    method: 'GET',
+                    headers: { 'X-CSRFToken': csrfToken, 'X-Requested-With': 'XMLHttpRequest' }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.is_bookmarked) {
+                        icon.classList.remove('far');
+                        icon.classList.add('fas');
+                    } else {
+                        icon.classList.remove('fas');
+                        icon.classList.add('far');
+                    }
+                })
+                .catch(error => console.error(`Error checking bookmark for PPA ${ppaId}:`, error));
+            });
+        }
+
+        // Use event delegation for bookmark buttons
+        ppaContainer.addEventListener('click', (e) => {
+            const button = e.target.closest('.bookmark-btn');
+            if (!button || '{{ user.is_authenticated }}' !== 'True') return;
+
+            e.preventDefault();
+            const ppaId = button.getAttribute('data-ppa-id');
+            const icon = button.querySelector('i');
+
+            fetch(`/ppa/${ppaId}/toggle-bookmark/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRFToken': csrfToken
+                },
+                body: JSON.stringify({})
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    if (data.action === 'added') {
+                        icon.classList.remove('far');
+                        icon.classList.add('fas');
+                    } else if (data.action === 'removed') {
+                        icon.classList.remove('fas');
+                        icon.classList.add('far');
+                    }
+                    window.showNotification(data.message, data.tags || 'info');
+                } else {
+                    window.showNotification('Failed to update bookmark.', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Bookmark error:', error);
+                window.showNotification('An error occurred while updating the bookmark.', 'error');
+            });
+        });
+
+        // Initial bookmark status update
+        updateBookmarkStatus();
+
+        // Pagination logic
+        let currentPage = {{ page_obj.number|default:1 }};
+
+        function updatePPAs(page) {
+            const urlParams = new URLSearchParams(window.location.search);
+            urlParams.set('page', page);
+            const url = `${window.location.pathname}?${urlParams.toString()}`;
+            window.history.pushState({ page: page }, '', url);
+            fetch(url, {
+                method: 'GET',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRFToken': csrfToken
+                }
+            })
+            .then(response => {
+                console.log('Response status:', response.status);
+                if (!response.ok) {
+                    return response.text().then(text => {
+                        console.error('Response text:', text);
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    });
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    ppaContainer.innerHTML = data.html;
+                    currentPage = data.current_page;
+                    const prevBtn = paginationControls.querySelector('#prev-btn');
+                    const nextBtn = paginationControls.querySelector('#next-btn');
+                    prevBtn.classList.toggle('disabled', !data.has_previous);
+                    nextBtn.classList.toggle('disabled', !data.has_next);
+                    pageNumber.textContent = `Page ${currentPage} of ${data.total_pages}`;
+                    updateBookmarkStatus(); // Re-apply bookmark status after content update
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                } else {
+                    console.error('Server returned failure:', data.error);
+                    ppaContainer.innerHTML = '<div class="col-12 text-center text-danger">Failed to load PPAs: ' + (data.error || 'Unknown error') + '</div>';
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching PPAs:', error);
+                ppaContainer.innerHTML = '<div class="col-12 text-center text-danger">Failed to load PPAs. Please try again.</div>';
+            });
+        }
+
+        // Event delegation for pagination buttons
+        paginationControls.addEventListener('click', (e) => {
+            e.preventDefault();
+            const prevBtn = e.target.closest('#prev-btn');
+            const nextBtn = e.target.closest('#next-btn');
+
+            if (prevBtn && !prevBtn.classList.contains('disabled')) {
+                updatePPAs(currentPage - 1);
+            } else if (nextBtn && !nextBtn.classList.contains('disabled')) {
+                updatePPAs(currentPage + 1);
+            }
+        });
+
+        // Handle back/forward browser navigation
+        window.addEventListener('popstate', (event) => {
+            const page = event.state?.page || 1;
+            updatePPAs(page);
+        });
+
+        // Trigger initial update if paginated
+        if ('{{ is_paginated }}' === 'True') {
+            const urlParams = new URLSearchParams(window.location.search);
+            const initialPage = parseInt(urlParams.get('page')) || {{ page_obj.number|default:1 }};
+            updatePPAs(initialPage);
+        }
+    });
+</script>
+<div id="available-states-data" style="display: none;">{{ states|json_script:"available-states-data" }}</div>
+{% endblock %}

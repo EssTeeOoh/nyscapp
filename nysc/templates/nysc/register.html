@@ -1,0 +1,129 @@
+{% extends 'nysc/base.html' %}
+{% block title %}Register - NYSC Connect{% endblock %}
+{% block content %}
+{% load static %}
+{% load form_tags %}
+
+<section class="py-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h1 class="h3 mb-4 text-center">Register</h1>
+                        {% if messages %}
+                            <div class="mb-3">
+                                {% for message in messages %}
+                                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                                        {{ message }}
+                                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        <form method="post" action="{% url 'register' %}" id="register-form">
+                            {% csrf_token %}
+                            <!-- Username -->
+                            <div class="mb-3">
+                                <label for="{{ form.username.id_for_label }}" class="form-label">Username</label>
+                                {{ form.username|add_attrs:"class:form-control" }}
+                                <div class="form-text">{{ form.username.help_text }}</div>
+                                {% if form.username.errors %}
+                                    <div class="text-danger">{{ form.username.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <!-- Email -->
+                            <div class="mb-3">
+                                <label for="{{ form.email.id_for_label }}" class="form-label">Email</label>
+                                {{ form.email|add_attrs:"class:form-control" }}
+                                {% if form.email.errors %}
+                                    <div class="text-danger">{{ form.email.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <!-- Password -->
+                            <div class="mb-3">
+                                <label for="{{ form.password1.id_for_label }}" class="form-label">Password</label>
+                                {{ form.password1|add_attrs:"class:form-control" }}
+                                <div class="form-text">{{ form.password1.help_text }}</div>
+                                {% if form.password1.errors %}
+                                    <div class="text-danger">{{ form.password1.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <!-- Confirm Password -->
+                            <div class="mb-3">
+                                <label for="{{ form.password2.id_for_label }}" class="form-label">Confirm Password</label>
+                                {{ form.password2|add_attrs:"class:form-control" }}
+                                {% if form.password2.errors %}
+                                    <div class="text-danger">{{ form.password2.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="d-grid mb-3">
+                                <button type="submit" class="btn btn-primary" id="submit-btn">Register</button>
+                            </div>
+                        </form>
+                        <p class="text-center">
+                            <a href="{% url 'resend_verification' %}" data-bs-toggle="modal" data-bs-target="#resendVerificationModal" class="btn btn-link">Resend Verification Email</a>
+                        </p>
+                        <p class="text-center">
+                            <a href="{% url 'social:begin' 'google-oauth2' %}" class="btn btn-outline-primary">
+                                <img src="{% static 'nysc/images/google-logo-fallback.png' %}" alt="Google" width="20" class="me-2">
+                                Sign in with Google
+                            </a>
+                        </p>
+                        <p class="text-center">
+                            Already have an account? <a href="{% url 'login' %}" class="btn btn-link">Login</a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Resend Verification Modal -->
+<div class="modal fade" id="resendVerificationModal" tabindex="-1" aria-labelledby="resendVerificationModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="resendVerificationModalLabel">Resend Verification Email</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form method="post" action="{% url 'resend_verification' %}">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Email</label>
+                        <input type="email" name="email" id="email" class="form-control" required>
+                    </div>
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary">Resend Verification</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if show_verification_modal %}
+<script>
+    $(document).ready(function() {
+        // Show email verification modal if set
+        $('#emailVerificationModal').modal('show');
+
+        // Disable submit button on form submission
+        $('#register-form').on('submit', function() {
+            $('#submit-btn').prop('disabled', true).text('Submitting...');
+        });
+    });
+</script>
+{% else %}
+<script>
+    $(document).ready(function() {
+        // Disable submit button on form submission
+        $('#register-form').on('submit', function() {
+            $('#submit-btn').prop('disabled', true).text('Submitting...');
+        });
+    });
+</script>
+{% endif %}
+{% endblock %}

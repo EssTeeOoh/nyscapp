@@ -1,0 +1,22 @@
+# Created by venv; see https://docs.python.org/3/library/venv.html
+# .env file
+.env
+
+# Virtual environment
+.venv/
+__pycache__/
+*.pyc
+
+# Django specific
+*.log
+*.sqlite3
+staticfiles/
+media/
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# IDE files
+.idea/
+*.vscode/

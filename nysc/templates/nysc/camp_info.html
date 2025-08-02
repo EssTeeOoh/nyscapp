@@ -1,0 +1,77 @@
+{% extends "nysc/base.html" %}
+{% load static %}
+
+{% block title %}Camp Information | Corps Connect{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="text-center mb-4">NYSC Camp Information</h1>
+
+    <!-- Share Button -->
+    <div class="text-center mb-3">
+        <button class="btn share-btn" style="display: block !important; opacity: 1 !important; z-index: 1101;" onclick="sharePage()">Share This Page</button>
+    </div>
+
+    <!-- Links Section -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5 class="card-title">Useful Links</h5>
+            <ul class="list-group">
+                {% for link in links %}
+                    <li class="list-group-item"><a href="{{ link.url }}" target="_blank">{{ link.text }}</a></li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+
+    <!-- Camp Items Checklist -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5 class="card-title">Items Needed in Camp</h5>
+            {% for category in camp_items %}
+                <h6>{{ category.category }}</h6>
+                <ul class="list-group mb-3">
+                    {% for item in category.items %}
+                        <li class="list-group-item">{{ item }}</li>
+                    {% endfor %}
+                </ul>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Camp Locations -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5 class="card-title">Camp Locations</h5>
+            {% for state, lgas in camp_data.items %}
+                <h6>{{ state }}</h6>
+                {% for lga, camps in lgas.items %}
+                    <p><strong>{{ lga }}:</strong>
+                        {% for camp in camps %}
+                            <a href="https://www.google.com/maps/search/?api=1&query={{ camp|urlencode }}" target="_blank">{{ camp }}</a>
+                            {% if not forloop.last %}, {% endif %}
+                        {% endfor %}
+                    </p>
+                {% endfor %}
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+function sharePage() {
+    if (navigator.share) {
+        navigator.share({
+            title: 'NYSC Camp Information',
+            text: 'Check out this useful NYSC camp info page!',
+            url: window.location.href
+        }).then(() => console.log('Shared successfully'))
+          .catch((error) => console.error('Error sharing:', error));
+    } else {
+        alert('Share feature not supported on this browser. Copy the URL manually: ' + window.location.href);
+    }
+}
+</script>
+{% endblock %}

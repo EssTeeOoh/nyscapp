@@ -1,0 +1,62 @@
+<div id="ppa-container" class="row row-cols-1 row-cols-md-3 g-4">
+    {% for ppa in ppas %}
+        <div class="col">
+            <div class="card h-100" style="background-color: var(--card-bg); border-color: var(--card-border);">
+                <img src="{% if ppa.image %}{{ ppa.image.url }}{% else %}https://via.placeholder.com/300x200{% endif %}" class="card-img-top" alt="{{ ppa.name }} image" loading="lazy">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        {{ ppa.name }}
+                        {% if ppa.verified %}
+                            <i class="fas fa-check-circle text-primary verified-icon" data-bs-toggle="tooltip" data-bs-custom-class="custom-tooltip" title="This PPA is verified"></i>
+                        {% endif %}
+                    </h5>
+                    <p class="card-text">
+                        <strong>Sector:</strong> {{ ppa.sector }}<br>
+                        {% if ppa.stipend %}<strong>Stipend:</strong> ₦{{ ppa.stipend }}<br>{% endif %}
+                        {% if ppa.accommodation_available is not None %}
+                            <strong>Accommodation:</strong> {{ ppa.accommodation_available|yesno:"Yes,No" }}<br>
+                        {% else %}
+                            <strong>Accommodation:</strong> Not Sure<br>
+                        {% endif %}
+                        <strong>Location:</strong> {{ ppa.state }} - {{ ppa.lga }}<br>
+                        <strong>Address:</strong>
+                        {% if ppa.address %}
+                            <a href="https://www.google.com/maps/search/?api=1&query={{ ppa.address|urlencode }}" target="_blank" rel="noopener noreferrer">{{ ppa.address }}</a>
+                        {% else %}N/A{% endif %}<br>
+                        <strong>Rating:</strong>
+                        <span class="text-warning">
+                            {% for i in "12345" %}
+                                {% if forloop.counter0 < ppa.avg_rating|floatformat:0 %}★{% else %}☆{% endif %}
+                            {% endfor %}
+                        </span>
+                        {{ ppa.avg_rating|floatformat:1 }} stars
+                    </p>
+                    <div class="d-flex align-items-center mt-3">
+                        <a href="{% url 'ppa_detail' ppa.id %}" class="btn btn-secondary me-2" aria-label="View {{ ppa.name }} details">View Details</a>
+                        <button class="bookmark-btn" data-ppa-id="{{ ppa.id }}" aria-label="Bookmark {{ ppa.name }}">
+                            <i class="fa-bookmark {% if request.user.is_authenticated and ppa in request.user.bookmarks.all %}fas{% else %}far{% endif %}" aria-hidden="true"></i>
+                        </button>
+                        {% if ppa.posted_by %}
+                            <span class="d-flex align-items-center ms-auto">
+                                <div class="author-avatar me-2">
+                                    {% if ppa.posted_by.profile.profile_picture %}
+                                        <img src="{{ ppa.posted_by.profile.profile_picture.url }}" alt="{{ ppa.posted_by.username }}'s avatar" loading="lazy" style="width: 30px; height: 30px; object-fit: cover; border-radius: 50%;">
+                                    {% else %}
+                                        <div class="default-author-avatar" style="width: 30px; height: 30px; background: var(--default-avatar-bg); color: var(--default-avatar-text); display: flex; align-items: center; justify-content: center; font-size: 16px; border-radius: 50%;">{{ ppa.posted_by.username|first|upper }}</div>
+                                    {% endif %}
+                                </div>
+                                <a href="{% url 'profile_view' ppa.posted_by.username %}" class="text-primary" style="text-decoration: none;">{{ ppa.posted_by.username }}</a>
+                            </span>
+                        {% else %}
+                            <span class="text-muted ms-auto">Unknown Author</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% empty %}
+        <div class="col-12 text-center">
+            <p>No recommended PPAs found. <a href="{% url 'submit_ppa' %}" class="btn btn-outline-primary" aria-label="Submit a PPA">Submit a PPA!</a></p>
+        </div>
+    {% endfor %}
+</div>

@@ -1,0 +1,110 @@
+{
+  "Abia": {
+    "Bende": ["NYSC Permanent Orientation Camp, Umunna"]
+  },
+  "Adamawa": {
+    "Girei": ["NYSC Orientation Camp, Lapondo"]
+  },
+  "Akwa Ibom": {
+    "Ikot Ekpene": ["NYSC Orientation Camp, Ikot Itie Idang"]
+  },
+  "Anambra": {
+    "Orumba South": ["NYSC Orientation Camp, Umunze"]
+  },
+  "Bauchi": {
+    "Ganjuwa": ["NYSC Orientation Camp, Wailo"]
+  },
+  "Bayelsa": {
+    "Kaiama": ["NYSC Orientation Camp, Yenagoa"]
+  },
+  "Benue": {
+    "Tarka": ["NYSC Orientation Camp, Wanune"]
+  },
+  "Borno": {
+    "Konduga": ["NYSC Orientation Camp, Maiduguri"]
+  },
+  "Cross River": {
+    "Obubra": ["NYSC Orientation Camp, Obubra"]
+  },
+  "Delta": {
+    "Aniocha North": ["NYSC Orientation Camp, Issele-Uku"]
+  },
+  "Ebonyi": {
+    "Ishielu": ["NYSC Orientation Camp, Ezillo"]
+  },
+  "Edo": {
+    "Ovia North-East": ["NYSC Orientation Camp, Okada"]
+  },
+  "Ekiti": {
+    "Emure": ["NYSC Orientation Camp, Ise-Emure"]
+  },
+  "Enugu": {
+    "Awgu": ["NYSC Orientation Camp, Awgu"]
+  },
+  "Gombe": {
+    "Akko": ["NYSC Orientation Camp, Amada"]
+  },
+  "Imo": {
+    "Nkwerre": ["NYSC Orientation Camp, Eziama"]
+  },
+  "Jigawa": {
+    "Dutse": ["NYSC Orientation Camp, Fanisau"]
+  },
+  "Kaduna": {
+    "Igabi": ["NYSC Orientation Camp, Kaduna"]
+  },
+  "Kano": {
+    "Karaye": ["NYSC Orientation Camp, Karaye"]
+  },
+  "Katsina": {
+    "Mani": ["NYSC Orientation Camp, Katsina"]
+  },
+  "Kebbi": {
+    "Suru": ["NYSC Orientation Camp, Dakingari"]
+  },
+  "Kogi": {
+    "Lokoja": ["NYSC Orientation Camp, Asokoro"]
+  },
+  "Kwara": {
+    "Edu": ["NYSC Orientation Camp, Yikpata"]
+  },
+  "Lagos": {
+    "Agege": ["NYSC Orientation Camp, Iyana-Ipaja"]
+  },
+  "Nasarawa": {
+    "Keffi": ["NYSC Orientation Camp, Keffi"]
+  },
+  "Niger": {
+    "Paikoro": ["NYSC Orientation Camp, Paiko"]
+  },
+  "Ogun": {
+    "Ijebu-Ode": ["NYSC Orientation Camp, Sagamu"]
+  },
+  "Ondo": {
+    "Akoko North-East": ["NYSC Orientation Camp, Ikare-Akoko"]
+  },
+  "Osun": {
+    "Osogbo": ["NYSC Orientation Camp, Ede"]
+  },
+  "Oyo": {
+    "Iseyin": ["NYSC Orientation Camp, Iseyin"]
+  },
+  "Plateau": {
+    "Mangu": ["NYSC Orientation Camp, Mangu"]
+  },
+  "Rivers": {
+    "Tai": ["NYSC Orientation Camp, Nonwa-Gbam"]
+  },
+  "Sokoto": {
+    "Wamakko": ["NYSC Orientation Camp, Wamakko"]
+  },
+  "Taraba": {
+    "Jalingo": ["NYSC Orientation Camp, Sibre"]
+  },
+  "Yobe": {
+    "Fika": ["NYSC Orientation Camp, Fika"]
+  },
+  "Zamfara": {
+    "Tsafe": ["NYSC Orientation Camp, Tsafe"]
+  }
+}

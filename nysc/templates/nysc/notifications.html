@@ -1,0 +1,120 @@
+{% extends 'nysc/base.html' %}
+{% load static %}
+{% block title %}Notifications - Corps Connect{% endblock %}
+{% block content %}
+<section class="py-5">
+    <div class="container">
+        <div class="card shadow-sm border-0 rounded-4" style="display: flex; flex-direction: column;">
+            <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                <h1 class="h4 mb-0">Notifications</h1>
+                {% if notifications %}
+                    <button id="clearAllNotifications" class="btn btn-danger btn-sm">Clear All</button>
+                {% endif %}
+            </div>
+            <div class="card-body flex-grow-1">
+                {% if notifications %}
+                    <div class="list-group list-group-flush" id="notificationList">
+                        {% for notification in notifications %}
+                            {% with data_urls=notification.data.urls|default:None data_url=notification.data.url|default:None %}
+                            <a href="{% if data_urls.leaderboard_url %}{{ data_urls.leaderboard_url }}{% elif data_urls.follower_url %}{{ data_urls.follower_url }}{% elif data_urls.post_url %}{{ data_urls.post_url }}{% elif data_urls.rating_url %}{{ data_urls.rating_url }}{% elif data_url %}{{ data_url }}{% else %}#{% endif %}" 
+                               class="list-group-item list-group-item-action {% if not notification.is_read %}bg-light{% endif %} d-flex justify-content-between align-items-center p-3 transition-all duration-300 hover:bg-gray-100"
+                               data-notification-id="{{ notification.id }}">
+                                <div>
+                                    <p class="mb-1 text-dark fw-medium">{{ notification.message }}</p>
+                                    <small class="text-muted">{{ notification.created_at|timesince }} ago - Type: {{ notification.type }}</small>
+                                </div>
+                                {% if not notification.is_read %}<span class="badge bg-primary rounded-pill">New</span>{% endif %}
+                            </a>
+                            {% endwith %}
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-bell-slash fa-3x text-muted mb-3"></i>
+                        <p class="text-muted">No notifications yet.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+{% block extra_scripts %}
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-kenU1KFdBIe4zVF0s0G1M5b4hcpxyD9F7jL+jjXkk+Q2h455rYXK/7HAuoJl+0I4" crossorigin="anonymous"></script>
+<script>
+    // CSRF Token Function
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    const csrfToken = getCookie('csrftoken');
+
+    // Mark all notifications as read on page load
+    document.addEventListener('DOMContentLoaded', () => {
+        fetch('/mark_notifications_read/', {
+            method: 'POST',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRFToken': csrfToken,
+                'Content-Type': 'application/json'
+            },
+            credentials: 'same-origin'
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                document.querySelectorAll('.list-group-item.bg-light').forEach(item => {
+                    item.classList.remove('bg-light');
+                    const badge = item.querySelector('.badge');
+                    if (badge) badge.remove();
+                });
+            } else {
+                console.error('Failed to mark notifications as read:', data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error marking notifications as read:', error);
+        });
+    });
+
+    // Clear Notifications
+    document.getElementById('clearAllNotifications')?.addEventListener('click', (e) => {
+        e.preventDefault();
+        fetch('/clear_notifications/', {
+            method: 'POST',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRFToken': csrfToken,
+                'Content-Type': 'application/json'
+            },
+            credentials: 'same-origin'
+        })
+        .then(response => {
+            if (!response.ok) throw new Error('Network response was not ok');
+            return response.json();
+        })
+        .then(data => {
+            if (data.status === 'success') {
+                document.getElementById('notificationList').innerHTML = '<a class="list-group-item list-group-item-action text-center text-muted">No notifications</a>';
+                document.getElementById('clearAllNotifications').remove();
+            } else {
+                console.error('Failed to clear notifications:', data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error clearing notifications:', error);
+        });
+    });
+</script>
+{% endblock %}

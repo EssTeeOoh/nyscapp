@@ -1,0 +1,2130 @@
+/* ==========================================================================
+   Custom Variables for Theme Consistency
+   ========================================================================== */
+
+:root,
+[data-theme="light"] {
+  /* Card and Background Colors */
+  --card-bg: #f8f9fa;
+  --card-text: #212529;
+  --card-border: #dee2e6;
+  --body-bg: #d3d3d3;
+  --body-text: #212529;
+
+  /* Button Colors */
+  --btn-primary-bg: #0d6efd;
+  --btn-primary-text: #ffffff;
+  --btn-primary-hover-bg: #0a58ca;
+  --btn-danger-bg: #dc3545;
+  --btn-danger-text: #ffffff;
+  --btn-danger-hover-bg: #bb2d3b;
+  --btn-outline-danger-text: #dc3545;
+  --btn-outline-danger-border: #dc3545;
+  --btn-outline-danger-hover-bg: #dc3545;
+  --btn-outline-danger-hover-text: #ffffff;
+
+  /* Alert Colors */
+  --alert-success-bg: #28a745;
+  --alert-success-text: #ffffff;
+
+  /* Profile and Avatar Colors */
+  --profile-card-bg: #ececec;
+  --profile-details-bg: #f0f0f0;
+  --social-icon-bg: #ffffff;
+  --social-icon-text: #333333;
+  --social-icon-hover-bg: #000000;
+  --social-icon-hover-text: #ffffff;
+  --default-avatar-bg: #6c757d;
+  --default-avatar-text: #ffffff;
+  --default-ppa-avatar-bg: #6c757d;
+  --default-ppa-avatar-text: #ffffff;
+
+  /* Icon and Stats Colors */
+  --stat-icon-color: #0d6efd;
+  /* Table-Specific Variables */
+  --table-bg: #ffffff;
+  --table-hover-bg: #e9ecef;
+  --table-border: #dee2e6;
+  --table-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+[data-theme="dark"] {
+  /* Card and Background Colors */
+  --card-bg: #343a40;
+  --card-text: #e9ecef;
+  --card-border: #495057;
+  --body-bg: #212529;
+  --body-text: #f8f9fa;
+
+  /* Button Colors */
+  --btn-primary-bg: #4dabf5;
+  --btn-primary-text: #ffffff;
+  --btn-primary-hover-bg: #3d8bcd;
+  --btn-danger-bg: #dc3545;
+  --btn-danger-text: #ffffff;
+  --btn-danger-hover-bg: #bb2d3b;
+  --btn-outline-danger-text: #dc3545;
+  --btn-outline-danger-border: #dc3545;
+  --btn-outline-danger-hover-bg: #dc3545;
+  --btn-outline-danger-hover-text: #ffffff;
+
+  /* Alert Colors */
+  --alert-success-bg: #2ec44e;
+  --alert-success-text: #212529;
+
+  /* Profile and Avatar Colors */
+  --profile-card-bg: #2c3034;
+  --profile-details-bg: #343a40;
+  --social-icon-bg: #495057;
+  --social-icon-text: #e9ecef;
+  --social-icon-hover-bg: #1a1d21;
+  --social-icon-hover-text: #f8f9fa;
+  --default-avatar-bg: #495057;
+  --default-avatar-text: #f8f9fa;
+  --default-ppa-avatar-bg: #495057;
+  --default-ppa-avatar-text: #f8f9fa;
+
+  /* Icon and Stats Colors */
+  --stat-icon-color: #4dabf5;
+  /* Table-Specific Variables */
+  --table-bg: #2c3034;
+  --table-hover-bg: #343a40;
+  --table-border: #495057;
+  --table-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* ==========================================================================
+   Global Styles
+   ========================================================================== */
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+  font-family: 'Open Sans', sans-serif;
+}
+
+body {
+  background-color: var(--body-bg);
+  color: var(--body-text);
+  transition: background-color 0.3s ease, color 0.3s ease;
+  display: flex;
+  flex-direction: column;
+}
+
+body.modal-open {
+  overflow: auto !important;
+  padding-right: 0 !important;
+}
+
+main {
+  flex: 1 0 auto;
+}
+
+footer {
+  flex-shrink: 0;
+}
+
+/* ==========================================================================
+   Card Styles (General)
+   ========================================================================== */
+
+.card {
+  background-color: var(--card-bg);
+  color: var(--card-text);
+  border-color: var(--card-border);
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+  position: relative;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+}
+
+.card .card-body {
+  padding: 2rem;
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.card .list-group {
+  flex-grow: 1;
+  overflow-y: auto;
+  position: relative;
+}
+
+.card .card-title,
+.card .card-text,
+.card p,
+.card h1,
+.card h2,
+.card h3,
+.card h4,
+.card h5,
+.card h6,
+.card small,
+.card .text-muted {
+  color: var(--card-text);
+}
+
+.card a {
+  color: var(--btn-primary-bg);
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+.card a:hover {
+  text-decoration: underline;
+}
+
+.card .text-warning {
+  color: #ffc107 !important;
+}
+
+.card .form-control {
+  background-color: #ffffff;
+  color: #212529;
+  border-color: #ced4da;
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+}
+
+[data-theme="dark"] .card .form-control {
+  background-color: #495057;
+  color: #f8f9fa;
+  border-color: #6c757d;
+}
+
+.card .form-control:focus {
+  border-color: #86b7fe;
+  box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+
+.card .form-label {
+  color: var(--card-text);
+  font-size: 1rem;
+}
+
+.card .btn-primary {
+  background-color: var(--btn-primary-bg);
+  color: var(--btn-primary-text);
+  border-color: var(--btn-primary-bg);
+  border-radius: 8px;
+  padding: 0.75rem 1.5rem;
+  font-weight: 500;
+}
+
+.card .btn-primary:hover {
+  background-color: var(--btn-primary-hover-bg);
+  border-color: var(--btn-primary-hover-bg);
+}
+
+/* ==========================================================================
+   Table Styles
+   ========================================================================== */
+
+.table {
+  background-color: var(--table-bg);
+  color: var(--card-text);
+  table-layout: fixed;
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: var(--table-shadow);
+}
+
+.table th,
+.table td {
+  border-color: var(--table-border);
+  vertical-align: middle;
+  padding: 12px;
+  text-align: center;
+}
+
+.table th {
+  background-color: var(--card-bg);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.table td {
+  transition: background-color 0.2s ease;
+}
+
+.table tr:hover td {
+  background-color: var(--table-hover-bg);
+}
+
+.table td:first-child,
+.table th:first-child {
+  padding-left: 20px;
+  text-align: left;
+}
+
+.table td:last-child,
+.table th:last-child {
+  padding-right: 20px;
+}
+
+.table .d-flex {
+  width: 100%;
+  justify-content: flex-start;
+  align-items: center;
+}
+
+.table .d-flex a {
+  color: var(--btn-primary-bg);
+  text-decoration: none;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 150px;
+}
+
+.table .d-flex a:hover {
+  text-decoration: underline;
+}
+
+.table .d-flex img {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  margin-right: 10px;
+  object-fit: cover;
+}
+
+.table .d-flex .bg-secondary {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--default-avatar-text);
+  margin-right: 10px;
+}
+
+/* Enhanced visibility for rank numbers and Total PPAs */
+.table td[data-label="Rank"] {
+  font-weight: 700;
+  color: #333333;
+}
+
+[data-theme="dark"] .table td[data-label="Rank"] {
+  color: #e9ecef;
+}
+
+.table td[data-label="Total PPAs"] {
+  font-weight: 600;
+  color: #333333;
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+[data-theme="dark"] .table td[data-label="Total PPAs"] {
+  color: #ffffff;
+  background-color: rgba(0, 0, 0, 0.2);
+}
+
+/* Style for top 3 ranks with better contrast */
+.table td[data-label="Badge"] .fa-medal {
+  font-size: 1.2em;
+  padding: 4px 8px;
+  border-radius: 6px;
+  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.4);
+  background-color: rgba(255, 255, 255, 0.3);
+}
+
+[data-theme="dark"] .table td[data-label="Badge"] .fa-medal {
+  background-color: rgba(0, 0, 0, 0.3);
+}
+
+.table td[data-label="Badge"] .fa-medal:nth-child(1) {
+  color: #ffd700;
+}
+
+.table td[data-label="Badge"] .fa-medal:nth-child(2) {
+  color: #c0c0c0;
+}
+
+.table td[data-label="Badge"] .fa-medal:nth-child(3) {
+  color: #cd7f32;
+}
+
+/* ==========================================================================
+   Mobile Adjustments
+   ========================================================================== */
+
+@media (max-width: 767.98px) {
+  .table thead {
+    display: none;
+  }
+
+  .table tr {
+    display: block;
+    margin-bottom: 15px;
+    border: 1px solid var(--table-border);
+    border-radius: 10px;
+    box-shadow: var(--table-shadow);
+  }
+
+  .table td {
+    display: block;
+    text-align: left;
+    padding: 10px 20px;
+    position: relative;
+  }
+
+  .table td[data-label="Verified PPAs"],
+  .table td[data-label="Badge"],
+  .table td[data-label="Follow"] {
+    display: none;
+  }
+
+  .table td::before {
+    content: attr(data-label);
+    font-weight: 600;
+    margin-right: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--card-text);
+  }
+
+  .table .d-flex {
+    justify-content: flex-start;
+  }
+
+  .table .follow-btn {
+    display: none;
+  }
+}
+
+/* ==========================================================================
+   PPA Card Specific Styles
+   ========================================================================== */
+
+.card-img-top {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+}
+
+.default-ppa-avatar {
+  width: 100%;
+  height: 200px;
+  background: linear-gradient(135deg, var(--default-ppa-avatar-bg), rgba(0, 0, 0, 0.2));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: clamp(50px, 25vw, 100px);
+  font-weight: 900;
+  font-family: 'Roboto', sans-serif;
+  color: var(--default-ppa-avatar-text);
+  text-transform: uppercase;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5), -1px -1px 2px rgba(255, 255, 255, 0.3);
+  letter-spacing: 3px;
+  line-height: 1;
+}
+
+/* ==========================================================================
+   Author Info Styles
+   ========================================================================== */
+
+.author-info {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  display: flex;
+  align-items: center;
+  z-index: 1;
+}
+
+.author-avatar {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.author-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.default-author-avatar {
+  width: 30px;
+  height: 30px;
+  background: var(--default-avatar-bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: bold;
+  color: var(--default-avatar-text);
+  text-transform: uppercase;
+  border-radius: 50%;
+}
+
+.author-info a {
+  color: var(--btn-primary-bg);
+  margin-left: 5px;
+  text-decoration: none;
+}
+
+.author-info a:hover {
+  text-decoration: underline;
+}
+
+/* ==========================================================================
+   Profile Card Styles
+   ========================================================================== */
+
+.profile-card {
+  position: relative;
+  width: 350px;
+  height: 450px;
+  margin: 0 auto;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 5px 18px rgba(0, 0, 0, 0.6);
+  background: var(--profile-card-bg);
+  transition: transform 0.5s ease;
+  cursor: pointer;
+}
+
+.profile-card:hover {
+  transform: scale(1.05);
+}
+
+.profile-card .card-image {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 2;
+  background: #000;
+  transition: transform 0.9s ease;
+}
+
+.profile-card .card-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: opacity 0.5s ease;
+}
+
+.profile-card .card-image .default-avatar {
+  width: 100%;
+  height: 100%;
+  background: var(--default-avatar-bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 120px;
+  font-weight: bold;
+  color: var(--default-avatar-text);
+  text-transform: uppercase;
+}
+
+.profile-card:hover .card-image {
+  transform: translateY(-100px);
+}
+
+.profile-card:hover .card-image img {
+  opacity: 0.4;
+}
+
+.profile-card .social-icons {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 3;
+  display: flex;
+  list-style: none;
+  padding: 0;
+}
+
+.profile-card .social-icons li a {
+  display: block;
+  width: 50px;
+  height: 50px;
+  line-height: 50px;
+  text-align: center;
+  background: var(--social-icon-bg);
+  color: var(--social-icon-text);
+  font-size: 23px;
+  margin: 0 6px;
+  border-radius: 50%;
+  transition: transform 0.4s ease, opacity 0.4s ease, background 0.2s ease, color 0.2s ease;
+  transform: translateY(200px);
+  opacity: 0;
+}
+
+.profile-card:not(:hover) .social-icons li a {
+  transform: translateY(200px) !important;
+  opacity: 0 !important;
+}
+
+.profile-card:hover .social-icons li a {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+.profile-card .social-icons li a:hover:not(.disabled) {
+  background: var(--social-icon-hover-bg);
+  color: var(--social-icon-hover-text);
+}
+
+.profile-card .social-icons li a.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.profile-card .social-icons li a .fab {
+  transition: transform 0.8s ease;
+}
+
+.profile-card .social-icons li a:hover:not(.disabled) .fab {
+  transform: rotateY(360deg);
+}
+
+.profile-card:hover .social-icons li:nth-child(1) a { transition-delay: 0.1s; }
+.profile-card:hover .social-icons li:nth-child(2) a { transition-delay: 0.2s; }
+
+.profile-card .details {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 120px;
+  background: var(--profile-details-bg);
+  color: var(--card-text);
+  padding: 10px;
+  z-index: 1;
+  text-align: center;
+}
+
+.profile-card .details h2 {
+  margin: 20px 0;
+  font-size: 1.5rem;
+  line-height: 1.5;
+}
+
+.profile-card .details .job-title {
+  font-size: 1rem;
+  color: var(--card-text);
+  opacity: 0.7;
+  font-weight: 300;
+}
+
+/* Follow/Unfollow Button */
+#follow-btn {
+  font-size: 16px;
+  padding: 10px 20px;
+  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+  min-width: 120px;
+}
+
+#follow-btn.btn-primary {
+  background: var(--btn-primary-bg);
+  color: var(--btn-primary-text);
+  border-color: var(--btn-primary-bg);
+}
+
+#follow-btn.btn-primary:hover {
+  background: var(--btn-primary-hover-bg);
+  border-color: var(--btn-primary-hover-bg);
+}
+
+#follow-btn.btn-outline-danger {
+  color: var(--btn-outline-danger-text);
+  border-color: var(--btn-outline-danger-border);
+}
+
+#follow-btn.btn-outline-danger:hover {
+  background: var(--btn-outline-danger-hover-bg);
+  color: var(--btn-outline-danger-hover-text);
+  border-color: var(--btn-outline-danger-hover-bg);
+}
+
+#follow-btn i {
+  margin-right: 8px;
+}
+
+#follow-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Stats Section */
+.stats {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+.stats .stat-item {
+  display: flex;
+  align-items: center;
+  font-size: 16px;
+  color: var(--card-text);
+}
+
+.stats .stat-item i {
+  font-size: 18px;
+  color: var(--stat-icon-color);
+  margin-right: 8px;
+}
+
+.stats .stat-item span {
+  font-weight: 500;
+}
+
+/* Profile Edit Card */
+.profile-edit-card {
+  position: relative;
+  width: 100%;
+  max-width: 350px;
+  min-height: auto;
+  margin: 0 auto;
+  border-radius: 16px;
+  box-shadow: 0 5px 18px rgba(0, 0, 0, 0.6);
+  background: var(--profile-card-bg);
+  transition: transform 0.5s ease;
+  overflow: visible;
+}
+
+.profile-edit-card .card-image {
+  position: relative;
+  width: 100%;
+  height: 150px;
+  background: #000;
+}
+
+.profile-edit-card .card-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.6;
+}
+
+.profile-edit-card .card-image .default-avatar {
+  width: 100%;
+  height: 100%;
+  background: var(--default-avatar-bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 80px;
+  font-weight: bold;
+  color: var(--default-avatar-text);
+  text-transform: uppercase;
+}
+
+.profile-edit-card .card-body {
+  padding: 20px;
+  color: var(--card-text);
+  min-height: calc(100vh - 150px - 70px);
+}
+
+.profile-edit-card .form-control,
+.profile-edit-card .form-label {
+  background: transparent;
+  color: var(--card-text);
+  border-color: var(--card-border);
+}
+
+/* ==========================================================================
+   Bottom Icon Bar Styles
+   ========================================================================== */
+
+.bottom-icon-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background-color: var(--card-bg);
+  border-top: 1px solid var(--card-border);
+  display: flex;
+  justify-content: space-around;
+  padding: 10px 0;
+  box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  transition: bottom 0.3s ease;
+}
+
+.bottom-icon-bar .icon-item {
+  text-align: center;
+  color: var(--card-text);
+  text-decoration: none;
+  font-size: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.bottom-icon-bar .icon-item i {
+  font-size: 20px;
+  margin-bottom: 2px;
+}
+
+.bottom-icon-bar .icon-item.active,
+.bottom-icon-bar .icon-item:hover {
+  color: var(--btn-primary-bg);
+}
+
+/* ==========================================================================
+   Alert Styles
+   ========================================================================== */
+
+.alert-success {
+  background-color: var(--alert-success-bg);
+  color: var(--alert-success-text);
+  border-color: #1e7e34;
+}
+
+[data-theme="dark"] .alert-success {
+  background-color: var(--alert-success-bg);
+  color: var(--alert-success-text);
+  border-color: #3dc75d;
+}
+
+/* ==========================================================================
+   Header and Footer Styles
+   ========================================================================== */
+
+header.bg-dark,
+footer.bg-dark {
+  background-color: #1a1d21 !important;
+}
+
+[data-theme="dark"] header.bg-dark,
+[data-theme="dark"] footer.bg-dark {
+  background-color: #2c3034 !important;
+}
+
+/* ==========================================================================
+   Navbar Styles
+   ========================================================================== */
+
+.navbar-dark {
+  --bs-navbar-bg: #343a40;
+  background-color: var(--bs-navbar-bg);
+  transition: background-color 0.3s ease;
+  z-index: 1001;
+}
+
+[data-theme="dark"] .navbar-dark {
+  --bs-navbar-bg: #2c3034;
+}
+
+/* ==========================================================================
+   Custom Modal Styles
+   ========================================================================== */
+
+.custom-modal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 1040;
+  justify-content: center;
+  align-items: center;
+}
+
+.custom-modal-content {
+  background-color: var(--card-bg);
+  padding: 20px;
+  border-radius: 10px;
+  width: 90%;
+  max-width: 350px;
+  position: relative;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  color: var(--card-text);
+  overflow-y: auto;
+  max-height: 80vh;
+}
+
+.custom-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.custom-modal-close {
+  background: none;
+  border: none;
+  font-size: 1.5em;
+  cursor: pointer;
+  color: var(--card-text);
+}
+
+/* Bootstrap Modal Adjustments */
+.modal {
+  z-index: 1060 !important;
+}
+
+.modal-backdrop {
+  z-index: 1050 !important;
+  background-color: rgba(0, 0, 0, 0.3) !important;
+  pointer-events: none !important;
+}
+
+.modal-content {
+  background-color: var(--card-bg) !important;
+  color: var(--card-text) !important;
+  border: none !important;
+  border-radius: 10px !important;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1) !important;
+  opacity: 1 !important;
+}
+
+.modal-header {
+  border-bottom: 1px solid var(--card-border) !important;
+  background-color: var(--card-bg) !important;
+}
+
+.modal-body {
+  max-height: 70vh;
+  overflow-y: auto;
+  padding: 1rem !important;
+  background-color: var(--card-bg) !important;
+}
+
+.modal-dialog {
+  display: flex;
+  align-items: center;
+  min-height: calc(100% - 1rem);
+}
+
+.modal-footer {
+  border-top: 1px solid var(--card-border) !important;
+  background-color: var(--card-bg) !important;
+}
+
+/* ==========================================================================
+   PPA History Button Styles
+   ========================================================================== */
+
+.list-group-item .btn-group {
+  gap: 5px;
+  position: relative;
+  z-index: 1103;
+}
+
+.list-group-item .btn {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.875rem;
+  min-width: 60px;
+  text-align: center;
+  transition: all 0.2s ease;
+  position: relative;
+  z-index: 1104;
+}
+
+.list-group-item .btn-outline-primary,
+.list-group-item .btn-info {
+  border-color: var(--btn-primary-bg);
+  color: var(--btn-primary-bg);
+}
+
+.list-group-item .btn-outline-primary:hover,
+.list-group-item .btn-info:hover {
+  background-color: var(--btn-primary-bg);
+  color: var(--btn-primary-text);
+}
+
+.list-group-item .btn-warning.disabled {
+  background-color: #ffc107;
+  color: #212529;
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.list-group-item .d-flex {
+  width: 100%;
+}
+
+.list-group-item .d-flex > div:first-child {
+  flex-grow: 1;
+  min-width: 0;
+}
+
+.list-group-item .d-flex > div:last-child {
+  flex-shrink: 0;
+}
+
+.list-group-item .dropdown {
+  display: inline-block;
+  position: relative;
+}
+
+/* ==========================================================================
+   Dropdown Menu Styles
+   ========================================================================== */
+
+.dropdown-menu {
+  z-index: 1105 !important;
+  position: absolute;
+  max-width: 200px;
+  min-width: auto;
+  overflow-x: hidden;
+  box-sizing: border-box;
+  right: 0;
+  left: auto;
+  border-radius: 8px;
+  background-color: var(--card-bg);
+  border: 1px solid var(--card-border);
+  opacity: 1 !important;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+  transform: translateY(-5px);
+}
+
+.dropdown-menu .dropdown-item {
+  overflow-wrap: break-word;
+  white-space: normal;
+  max-width: 100%;
+  padding: 0.5rem 1rem;
+  color: var(--card-text);
+  font-size: 0.9rem;
+  background-color: var(--card-bg);
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.dropdown-menu .dropdown-item:hover {
+  background-color: #e9ecef;
+  color: var(--btn-primary-bg);
+}
+
+[data-theme="dark"] .dropdown-menu .dropdown-item:hover {
+  background-color: #495057;
+}
+
+@media (max-width: 767.98px) {
+  .dropdown-menu {
+    max-width: 180px;
+    left: auto !important;
+    right: 0 !important;
+  }
+}
+
+/* ==========================================================================
+   Tooltip and Verified Icon Styles
+   ========================================================================== */
+
+.custom-tooltip .tooltip-inner {
+  background-color: #28a745;
+  color: white;
+  border-radius: 5px;
+  padding: 10px 15px;
+  font-size: 14px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.custom-tooltip .arrow::before {
+  border-bottom-color: #28a745;
+}
+
+.verified-icon {
+  cursor: pointer;
+  margin-left: 5px;
+  vertical-align: middle;
+}
+
+/* ==========================================================================
+   Responsive Adjustments
+   ========================================================================== */
+
+@media (max-width: 991px) {
+  body {
+    padding-bottom: 60px;
+  }
+
+  .profile-card {
+    width: 300px;
+    height: 400px;
+  }
+
+  .profile-card .card-image .default-avatar {
+    font-size: 100px;
+  }
+
+  .stats {
+    gap: 15px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .stats .stat-item {
+    font-size: 14px;
+  }
+
+  .stats .stat-item i {
+    font-size: 16px;
+  }
+
+  #follow-btn {
+    font-size: 14px;
+    padding: 8px 16px;
+    min-width: 100px;
+  }
+
+  .profile-edit-card {
+    max-width: 300px;
+    margin: 15px auto;
+  }
+
+  .profile-edit-card .card-image {
+    height: 120px;
+  }
+
+  .profile-edit-card .card-image .default-avatar {
+    font-size: 60px;
+  }
+
+  .profile-edit-card .card-body {
+    padding: 15px;
+    min-height: calc(100vh - 120px - 60px);
+  }
+
+  .profile-edit-card .card-body form {
+    max-height: calc(100vh - 120px - 60px - 30px);
+    overflow-y: auto;
+  }
+
+  .default-ppa-avatar {
+    font-size: clamp(30px, 15vw, 60px);
+    height: 150px;
+  }
+
+  .row-cols-3 > .col {
+    padding-left: 8px;
+    padding-right: 8px;
+  }
+
+  .list-group-item .btn {
+    padding: 0.2rem 0.4rem;
+    font-size: 0.75rem;
+    min-width: 50px;
+  }
+
+  .list-group-item .btn-group {
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .author-info {
+    margin-right: 5px;
+    margin-bottom: 5px;
+  }
+
+  .author-info .author-avatar {
+    width: 25px;
+    height: 25px;
+  }
+
+  .author-info a {
+    font-size: 0.9rem;
+  }
+
+  .card .card-body {
+    padding: 1.5rem;
+  }
+
+  .card .form-control {
+    padding: 0.5rem 1rem;
+  }
+
+  .card .btn-primary {
+    padding: 0.5rem 1.25rem;
+  }
+}
+
+@media (min-width: 992px) {
+  .bottom-icon-bar {
+    display: none;
+  }
+}
+
+/* ==========================================================================
+   Accessibility
+   ========================================================================== */
+
+.card a:focus,
+.card button:focus,
+.card .form-control:focus,
+.profile-card a:focus,
+.profile-card button:focus,
+.profile-edit-card a:focus,
+.profile-edit-card button:focus {
+  outline: 2px solid var(--btn-primary-bg);
+  outline-offset: 2px;
+}
+
+/* ==========================================================================
+   Button Styles
+   ========================================================================== */
+
+.follow-btn {
+  min-width: 80px;
+  white-space: nowrap;
+}
+
+[data-theme="dark"] .follow-btn {
+  border-color: var(--btn-outline-danger-border);
+  color: var(--btn-outline-danger-text);
+}
+
+.follow-btn:hover {
+  background-color: var(--btn-primary-hover-bg);
+  color: var(--btn-primary-text);
+  border-color: var(--btn-primary-hover-bg);
+}
+
+/* ==========================================================================
+   Custom Modal Styles (Specific)
+   ========================================================================== */
+
+#clearConfirmationModal .modal-content {
+  background-color: #f8f9fa;
+  border-radius: 10px;
+  border: 1px solid #ddd;
+}
+
+#clearConfirmationModal .modal-header {
+  background-color: #dc3545;
+  color: white;
+  border-bottom: 1px solid #ddd;
+}
+
+#clearConfirmationModal .modal-body {
+  padding: 20px;
+  font-size: 1.1rem;
+  color: #333;
+}
+
+#clearConfirmationModal .modal-footer {
+  border-top: 1px solid #ddd;
+}
+
+/* ==========================================================================
+   Star Rating Styles
+   ========================================================================== */
+
+.star-rating {
+  font-size: 24px;
+  cursor: pointer;
+  display: inline-block;
+  margin-bottom: 10px;
+}
+
+.star {
+  color: #ccc;
+  transition: color 0.3s;
+}
+
+.star.rated {
+  color: #ffc107;
+}
+
+.star:hover,
+.star:hover ~ .star {
+  color: #ffeb3b;
+}
+
+/* ==========================================================================
+   Form Control Styles
+   ========================================================================== */
+
+.mb-3 .form-control {
+  background-color: var(--card-bg);
+  color: var(--card-text);
+  border-color: var(--card-border);
+}
+
+[data-theme="dark"] .mb-3 .form-control {
+  background-color: #495057;
+  color: #f8f9fa;
+  border-color: #6c757d;
+}
+
+/* ==========================================================================
+   Textarea Alignment Styles
+   ========================================================================== */
+
+.card .card-body form#reviewForm #id_review_textarea,
+.review-textarea {
+  text-align: left !important;
+  padding-left: 10px !important;
+  text-align: start !important;
+  direction: ltr !important;
+  unicode-bidi: isolate !important;
+}
+
+[data-theme="dark"] .card .card-body form#reviewForm #id_review_textarea,
+[data-theme="light"] .card .card-body form#reviewForm #id_review_textarea {
+  text-align: left !important;
+  padding-left: 10px !important;
+  text-align: start !important;
+  direction: ltr !important;
+  unicode-bidi: isolate !important;
+}
+
+/* ==========================================================================
+   Share Button and Options Styles
+   ========================================================================== */
+
+.share-btn,
+.share-options .btn {
+  padding: 0.25rem 0.5rem;
+  transition: all 0.2s ease;
+}
+
+.share-options {
+  margin-top: 0.5rem;
+}
+
+.share-options .btn {
+  font-size: 0.75rem;
+}
+
+.share-btn,
+[data-theme="dark"] .share-options .btn {
+  color: var(--btn-primary-bg);
+  border-color: var(--btn-primary-bg);
+}
+
+.share-options .btn:hover {
+  background-color: var(--btn-primary-bg);
+  color: var(--btn-primary-text);
+  border-color: var(--btn-primary-bg);
+}
+
+[data-theme="dark"] .share-options .btn:hover {
+  background-color: var(--btn-primary-hover-bg);
+  border-color: var(--btn-primary-hover-bg);
+}
+
+/* ==========================================================================
+   Modern Collapsible Sidebar
+   ========================================================================== */
+
+.sidebar {
+  width: 250px;
+  height: 100vh;
+  position: fixed;
+  top: 0;
+  left: -250px;
+  background: linear-gradient(135deg, #f4f4f9, #e0e7ff);
+  color: #333;
+  transition: left 0.3s ease;
+  z-index: 1101;
+  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.2);
+  overflow-y: auto;
+}
+
+[data-theme="dark"] .sidebar {
+  background: linear-gradient(135deg, #1a1d21, #2c2f33);
+  color: #f8f9fa;
+}
+
+.sidebar.open {
+  left: 0;
+}
+
+.sidebar-header {
+  padding: 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.profile-header {
+  color: inherit;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  font-size: 1.5rem;
+  font-weight: bold;
+  cursor: pointer;
+  width: 100%;
+  position: relative;
+}
+
+.profile-header .dropdown-toggle {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: 5px 10px;
+  border: none;
+  background: none;
+  cursor: pointer;
+}
+
+.profile-header .dropdown-toggle::after {
+  content: none;
+}
+
+.profile-header:hover .profile-dropdown {
+  display: block;
+}
+
+.follow-stats {
+  display: flex;
+  justify-content: space-around;
+  width: 100%;
+  margin-top: 15px;
+  padding: 10px;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(224, 231, 255, 0.1));
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease, background 0.3s ease;
+}
+
+[data-theme="dark"] .follow-stats {
+  background: linear-gradient(135deg, rgba(26, 29, 33, 0.7), rgba(44, 47, 51, 0.7));
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+}
+
+.follow-stats:hover .stat-card {
+  transform: translateY(-5px);
+}
+
+.stat-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 5px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  transition: transform 0.3s ease, background 0.3s ease;
+  width: 90px;
+  text-align: center;
+}
+
+[data-theme="dark"] .stat-card {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.stat-value {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--card-text);
+  margin-bottom: 2px;
+  font-family: 'Arial', sans-serif;
+  letter-spacing: 0.5px;
+}
+
+.stat-label {
+  font-size: 0.7rem;
+  color: rgba(0, 0, 0, 0.6);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-family: 'Verdana', sans-serif;
+  font-style: italic;
+}
+
+[data-theme="dark"] .stat-label {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.profile-pic-icon,
+.default-profile-pic {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  overflow: hidden;
+  margin-right: 10px;
+}
+
+.profile-pic-icon img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.default-profile-pic {
+  background: var(--default-avatar-bg);
+  color: var(--default-avatar-text);
+  font-size: 18px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sidebar-menu {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  height: calc(100vh - 180px);
+  overflow-y: auto;
+}
+
+.menu-item {
+  padding: 15px 20px;
+  transition: background 0.3s ease;
+}
+
+.menu-item:hover,
+.menu-item.active {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .menu-item:hover,
+[data-theme="dark"] .menu-item.active {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.menu-item a {
+  color: inherit;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  font-size: 1.1rem;
+}
+
+.menu-item i {
+  margin-right: 15px;
+  width: 20px;
+  text-align: center;
+}
+
+.social-media a {
+  color: inherit;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  font-size: 1.1rem;
+}
+
+.social-media i {
+  margin-right: 15px;
+  width: 20px;
+  text-align: center;
+}
+
+.social-media a:hover {
+  color: #1da1f2;
+}
+
+.sidebar-overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+}
+
+.sidebar-overlay.active {
+  display: block;
+}
+
+#sidebarToggleDesktop {
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+}
+
+#sidebarToggleDesktop .profile-pic-icon,
+#sidebarToggleDesktop .default-profile-pic {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  overflow: hidden;
+}
+
+#sidebarToggleDesktop .profile-pic-icon img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.main-content {
+  padding: 0;
+  transition: padding-left 0.3s ease;
+  padding-left: 20px;
+  width: 100%;
+  position: relative;
+  z-index: 1000;
+}
+
+.main-content.shifted {
+  padding-left: 270px;
+}
+
+/* ==========================================================================
+   Mobile Header Styles
+   ========================================================================== */
+
+.mobile-header {
+  display: flex;
+  align-items: center;
+  padding: 10px 20px;
+  background: linear-gradient(135deg, #2c3e50, #3498db);
+  color: #fff;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 1100;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  height: auto;
+  max-height: 60px;
+}
+
+.mobile-brand-container {
+  display: flex;
+  align-items: center;
+  margin-left: 10px;
+}
+
+.mobile-logo {
+  width: 30px;
+  height: 30px;
+  margin-right: 10px;
+  object-fit: contain;
+}
+
+.mobile-brand {
+  color: #fff;
+  font-size: 1.5rem;
+  font-weight: 600;
+  text-decoration: none;
+  font-family: 'Helvetica', 'Arial', sans-serif;
+  letter-spacing: 0.5px;
+}
+
+@media (min-width: 992px) {
+  .mobile-header {
+    display: none;
+  }
+  .mobile-logo {
+    display: none;
+  }
+}
+
+/* ==========================================================================
+   Sidebar Toggle Mobile
+   ========================================================================== */
+
+.sidebar-toggle-mobile {
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 1.5rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+}
+
+.profile-pic-icon-mobile,
+.default-profile-pic-mobile {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #495057;
+  color: #f8f9fa;
+}
+
+.profile-pic-icon-mobile img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.default-profile-pic-mobile {
+  font-size: 16px;
+  font-weight: bold;
+}
+
+/* ==========================================================================
+   Content Area
+   ========================================================================== */
+
+.content {
+  margin-top: 60px;
+}
+
+/* ==========================================================================
+   Responsive Sidebar Adjustments
+   ========================================================================== */
+
+@media (max-width: 991px) {
+  .sidebar {
+    left: -250px;
+  }
+
+  .sidebar.open {
+    left: 0;
+  }
+
+  .main-content {
+    padding-left: 0;
+  }
+
+  .main-content.shifted {
+    padding-left: 0;
+  }
+}
+
+@media (min-width: 992px) {
+  .bottom-icon-bar {
+    display: none;
+  }
+}
+
+/* ==========================================================================
+   Quick Access Bar Styles
+   ========================================================================== */
+
+.quick-access-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background: var(--card-bg);
+  border-top: 1px solid var(--card-border);
+  display: flex;
+  justify-content: space-around;
+  padding: 10px 0;
+  box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  transition: transform 0.3s ease;
+}
+
+.quick-access-bar.hidden {
+  transform: translateY(100%);
+}
+
+.quick-access-btn {
+  text-align: center;
+  color: var(--card-text);
+  text-decoration: none;
+  font-size: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 5px;
+  position: relative;
+  transition: color 0.3s ease;
+}
+
+.quick-access-btn:hover {
+  color: var(--btn-primary-bg);
+}
+
+.search-toggle {
+  display: none;
+}
+
+/* ==========================================================================
+   Modern Profile Dropdown
+   ========================================================================== */
+
+.profile-dropdown {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 10px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+  padding: 5px 0;
+  min-width: 150px;
+  position: absolute;
+  top: 100%;
+  right: 0;
+  left: auto;
+  display: none;
+  z-index: 1102;
+  opacity: 1 !important;
+}
+
+[data-theme="dark"] .profile-dropdown {
+  background: var(--card-bg);
+}
+
+.profile-dropdown .dropdown-item {
+  color: var(--card-text);
+  padding: 10px 20px;
+  font-size: 1rem;
+  transition: background 0.3s ease, color 0.3s ease;
+  background-color: var(--card-bg);
+}
+
+.profile-dropdown .dropdown-item:hover {
+  background: rgba(255, 255, 255, 0.2);
+  color: var(--btn-primary-bg);
+}
+
+.profile-dropdown .dropdown-divider {
+  border-top: 1px solid var(--card-border);
+}
+
+/* ==========================================================================
+   Mobile Header and Dropdown Adjustments
+   ========================================================================== */
+
+@media (max-width: 991px) {
+  .profile-header {
+    position: relative;
+  }
+
+  .profile-dropdown {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    left: auto;
+    transform: none !important;
+  }
+
+  #sidebarToggleMobile .dropdown-menu {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    left: auto;
+    min-width: 150px;
+  }
+}
+
+/* Ensure sidebar toggle dropdown aligns correctly */
+#sidebarToggleDesktop,
+#sidebarToggleMobile {
+  position: relative;
+}
+
+#sidebarToggleDesktop .dropdown-menu,
+#sidebarToggleMobile .dropdown-menu {
+  right: 0;
+  left: auto;
+}
+
+/* ==========================================================================
+   Notification Badge Styles
+   ========================================================================== */
+
+#notificationQuickAccess {
+  position: relative;
+}
+
+#notificationQuickAccess .badge {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  font-size: 0.6em;
+  background: var(--btn-primary-bg);
+  color: var(--btn-primary-text);
+  border-radius: 50%;
+  padding: 2px 6px;
+}
+
+/* ==========================================================================
+   Responsive Container Adjustments
+   ========================================================================== */
+
+@media (max-width: 767.98px) {
+  .container {
+    margin-left: auto;
+    margin-right: auto;
+    max-width: 100%;
+    padding-left: 15px;
+    padding-right: 15px;
+  }
+
+  .stepwise-filter {
+    margin-left: 0;
+    margin-right: 0;
+  }
+
+  .filter-form .col-12.text-center {
+    padding-top: 1rem;
+  }
+
+  .card .card-body {
+    padding: 1rem;
+  }
+
+  .card .form-control {
+    padding: 0.5rem 1rem;
+  }
+}
+
+.stepwise-filter,
+.filter-form {
+  background: none;
+  border: none;
+  box-shadow: none;
+  border-radius: 0;
+  padding: 0;
+}
+
+.mt-4 {
+  margin-top: 2rem !important;
+}
+
+/* ==========================================================================
+   Notification Banner Styles
+   ========================================================================== */
+
+.notification-banner {
+  position: fixed;
+  top: -100px;
+  left: 0;
+  width: 100%;
+  z-index: 1100;
+  text-align: center;
+  padding: 10px 15px;
+  transform: translateY(0);
+  transition: top 0.3s ease, opacity 0.3s ease;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  overflow-x: hidden;
+  max-height: 80vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+@media (max-width: 767.98px) {
+  .notification-banner {
+    width: 100vw;
+    padding: 8px 10px;
+    font-size: 0.85rem;
+    max-height: 50vh;
+  }
+  .notification-banner .alert-custom {
+    max-width: 90%;
+    padding: 6px 10px;
+    font-size: 0.85rem;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    overflow-y: auto;
+    max-height: 40vh;
+    box-sizing: border-box;
+  }
+  .notification-banner .alert-custom i {
+    margin-right: 5px;
+    font-size: 0.9em;
+  }
+}
+
+.notification-banner .alert-custom {
+  display: inline-block;
+  margin: 0 auto;
+  padding: 10px 15px;
+  border-radius: 5px;
+  font-size: 1rem;
+  max-width: 90%;
+  pointer-events: auto;
+  box-sizing: border-box;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  white-space: normal;
+}
+
+.notification-banner .alert-custom i {
+  margin-right: 10px;
+}
+
+.notification-banner .alert-success {
+  background: rgba(25, 102, 41, 0.9);
+  color: #ffffff;
+  border-left: 4px solid #1e7e34;
+}
+
+.notification-banner .alert-error {
+  background: rgba(153, 50, 40, 0.9);
+  color: #ffffff;
+  border-left: 4px solid #b02a37;
+}
+
+.notification-banner .alert-info {
+  background: rgba(26, 77, 109, 0.9);
+  color: #ffffff;
+  border-left: 4px solid #1e4e79;
+}
+
+/* ==========================================================================
+   Card Width Adjustment for PC
+   ========================================================================== */
+
+@media (min-width: 992px) {
+  .row-cols-md-2 > .col {
+    flex: 0 0 48%;
+    max-width: 48%;
+  }
+
+  .row-cols-lg-3 > .col {
+    flex: 0 0 31%;
+    max-width: 31%;
+  }
+
+  /* Fix for PPA Card Alignment */
+  .maincontent {
+    max-width: 1200px; /* Limit container width for better control */
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 15px;
+    padding-right: 15px;
+  }
+
+  #ppa-container {
+    margin-left: -15px; /* Offset the default Bootstrap padding */
+    margin-right: -15px; /* Offset the default Bootstrap padding */
+  }
+
+  #ppa-container .row {
+    margin-left: 0;
+    margin-right: 0;
+    
+  }
+
+  #ppa-container .col, .row.g-4 .col { 
+    padding-left: 15px;
+    padding-right: 15px;
+    flex: 0 0 33.333333%; /* Ensure 3 columns take equal space */
+    max-width: 33.333333%;
+  }
+
+  .card {
+    margin-bottom: 30px; /* Consistent spacing below cards */
+    width: 100%; /* Ensure cards fill their column */
+  }
+}
+
+/* ==========================================================================
+   Bookmark Button Styles
+   ========================================================================== */
+
+.bookmark-btn {
+  background: none;
+  border: none;
+  padding: 0 5px;
+  font-size: 1rem;
+  color: var(--card-text);
+  cursor: pointer;
+  transition: color 0.3s ease;
+  margin-left: 5px;
+}
+
+.bookmark-btn:hover {
+  color: var(--btn-primary-bg);
+}
+
+.bookmark-btn .fas {
+  color: var(--btn-primary-bg);
+}
+
+.bookmark-btn .far {
+  color: var(--card-text);
+}
+
+[data-theme="dark"] .bookmark-btn {
+  color: var(--card-text);
+}
+
+[data-theme="dark"] .bookmark-btn:hover {
+  color: #4dabf5;
+}
+
+[data-theme="dark"] .bookmark-btn .fas {
+  color: #4dabf5;
+}
+
+/* ==========================================================================
+   Form-Specific Styles
+   ========================================================================== */
+
+.form-label {
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.form-text {
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+}
+
+.invalid-feedback {
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+}
+
+.d-grid .btn {
+  font-size: 1.1rem;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.d-grid .btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+@media (max-width: 767.98px) {
+  .d-grid .btn {
+    font-size: 1rem;
+    padding: 0.5rem 1rem;
+  }
+}
+
+/* ==========================================================================
+   Notifications Page Specific Styles
+   ========================================================================== */
+
+#notificationList .list-group-item {
+  transition: background-color 0.3s ease;
+}
+
+#notificationList .list-group-item:hover {
+  background-color: #f8f9fa !important;
+}
+
+#notifications .card {
+  background: linear-gradient(135deg, #ffffff, #f0f2f5);
+}
+
+#notifications .card .card-header {
+  z-index: 1;
+}
+
+#notifications .card .card-body {
+  padding: 0;
+}
+
+#notifications .card .list-group {
+  padding: 1rem;
+  overflow-y: auto;
+}
+
+#notifications .modal-content {
+  background: #fff;
+}
+
+@media (max-width: 768px) {
+  #notifications .card {
+    margin: 0 10px;
+  }
+}

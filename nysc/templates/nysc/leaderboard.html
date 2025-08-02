@@ -1,0 +1,66 @@
+<!-- leaderboard.html -->
+{% extends 'nysc/base.html' %}
+{% block title %}Leaderboard - NYSC Connect{% endblock %}
+{% block content %}
+<section class="py-5">
+    <div class="container">
+        <h2 class="h3 mb-4" style="color: var(--card-text);">Leaderboard</h2>
+        <div class="table-responsive">
+            <table class="table table-striped table-hover leaderboard-table">
+                <thead>
+                    <tr>
+                        <th>Rank</th>
+                        <th>Username</th>
+                        <th>Total PPAs</th>
+                        <th>Verified PPAs</th>
+                        <th>Badge</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for entry in entries %}
+                        {% if entry.total_ppas > 0 %}
+                            <tr class="leaderboard-row" {% if forloop.counter > 10 %}style="display: none;"{% endif %}>
+                                <td data-label="Rank">{{ forloop.counter }}</td>
+                                <td data-label="Username">
+                                    <div class="d-flex align-items-center">
+                                        {% if entry.user.profile.profile_picture and entry.user.profile.profile_picture.url %}
+                                            <img src="{{ entry.user.profile.profile_picture.url }}" alt="{{ entry.user.username }}'s profile" class="rounded-circle me-2" style="width: 30px; height: 30px; object-fit: cover;" onerror="this.onerror=null; this.src='https://via.placeholder.com/30';">
+                                        {% else %}
+                                            <div class="rounded-circle bg-secondary me-2 d-flex align-items-center justify-content-center" style="width: 30px; height: 30px;">
+                                                <span class="text-white">{{ entry.user.username|first|upper }}</span>
+                                            </div>
+                                        {% endif %}
+                                        <a href="{% url 'profile_view' entry.user.username %}" class="text-primary">{{ entry.user.username }}</a>
+                                    </div>
+                                </td>
+                                <td data-label="Total PPAs">{{ entry.total_ppas }}</td>
+                                <td data-label="Verified PPAs">{{ entry.verified_ppas }}</td>
+                                <td data-label="Badge">
+                                    {% if forloop.counter == 1 %}
+                                        <i class="fas fa-medal" style="color: gold;"></i>
+                                    {% elif forloop.counter == 2 %}
+                                        <i class="fas fa-medal" style="color: silver;"></i>
+                                    {% elif forloop.counter == 3 %}
+                                        <i class="fas fa-medal" style="color: #cd7f32;"></i>
+                                    {% endif %}
+                                </td>
+                                <td data-label="Follow">
+                                    {% if request.user.is_authenticated and entry.user != request.user %}
+                                        <button class="btn btn-sm btn-outline-primary follow-btn" data-user="{{ entry.user.username }}" data-following="{{ entry.is_following|yesno:'true,false' }}" style="min-width: 80px;">
+                                            {{ entry.is_following|yesno:"Unfollow,Follow" }}
+                                        </button>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endif %}
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% if entries|length > 10 %}
+                <button id="showMoreBtn" class="btn btn-primary mt-3">Show More</button>
+            {% endif %}
+        </div>
+    </div>
+</section>
+{% endblock %}

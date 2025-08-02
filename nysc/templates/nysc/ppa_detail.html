@@ -1,0 +1,338 @@
+{% extends 'nysc/base.html' %}
+{% block title %}{{ ppa.name }} - NYSC Connect{% endblock %}
+{% block content %}
+{% load static %}
+
+<section class="py-5" style="padding-top: 80px;">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-8">
+                <div class="card" style="position: relative;">
+                    {% if ppa.image %}
+                        <img src="{{ ppa.image.url }}" class="card-img-top" alt="{{ ppa.name }}">
+                    {% else %}
+                        <div class="default-ppa-avatar">{{ ppa.name|first|upper }}</div>
+                    {% endif %}
+                    <div class="card-body text-left">
+                        <h1 class="h3">
+                            {{ ppa.name }} ({{ ppa.state }})
+                            {% if ppa.verified %}
+                                <i class="fas fa-check-circle text-primary verified-icon" data-bs-toggle="tooltip" data-bs-custom-class="custom-tooltip" title="This PPA is verified"></i>
+                            {% endif %}
+                        </h1>
+                        <p>
+                            <strong>Sector:</strong> {{ ppa.sector }}<br>
+                            {% if ppa.stipend %}
+                                <strong>Stipend:</strong> ₦{{ ppa.stipend }}<br>
+                            {% endif %}
+                            {% if ppa.accommodation_available is not None %}
+                                <strong>Accommodation:</strong> {{ ppa.accommodation_available|yesno:"Yes,No" }}<br>
+                            {% else %}
+                                <strong>Accommodation:</strong> Not Sure<br>
+                            {% endif %}
+                            <strong>Location:</strong> {{ ppa.state }} - {{ ppa.lga }}<br>
+                            <strong>Address:</strong> 
+                            {% if ppa.address %}
+                                <a href="https://www.google.com/maps/search/?api=1&query={{ ppa.address|urlencode }}" target="_blank">{{ ppa.address }}</a>
+                            {% else %}
+                                N/A
+                            {% endif %}<br>
+                            <strong>Contact:</strong> {{ ppa.contact|default:"N/A" }}<br>
+                            <strong>Rating:</strong> 
+                            <span class="text-warning">
+                                {% for i in "12345" %}
+                                    {% if forloop.counter0 < ppa.average_rating|floatformat:0 %}★{% else %}☆{% endif %}
+                                {% endfor %}
+                            </span> 
+                            {{ ppa.average_rating|floatformat:1 }} stars
+                        </p>
+                        <p>{{ ppa.description|default:"No description provided." }}</p>
+                        <!-- Share Button and Bookmark Button -->
+                        <div class="mt-3 d-flex gap-2">
+                            <button class="btn btn-primary share-btn" data-url="{% url 'ppa_detail' ppa.id %}" title="Share this PPA">
+                                <i class="fas fa-share"></i> Share
+                            </button>
+                            <button class="bookmark-btn" data-ppa-id="{{ ppa.id }}" aria-label="Bookmark {{ ppa.name }}">
+                                <i class="fa-bookmark {% if request.user.is_authenticated and ppa.id in bookmarked_ppa_ids %}fas{% else %}far{% endif %}" aria-hidden="true"></i>
+                            </button>
+                            <div class="share-options d-none mt-2">
+                                <a href="https://twitter.com/intent/tweet?url={{ request.build_absolute_uri|urlencode }}&text=Check out this PPA on NYSC Connect: {{ ppa.name }}!" class="btn btn-outline-primary btn-sm me-2" target="_blank">
+                                    <i class="fab fa-twitter"></i> Twitter
+                                </a>
+                                <a href="https://www.facebook.com/sharer/sharer.php?u={{ request.build_absolute_uri|urlencode }}" class="btn btn-outline-primary btn-sm me-2" target="_blank">
+                                    <i class="fab fa-facebook"></i> Facebook
+                                </a>
+                                <a href="https://wa.me/?text={{ request.build_absolute_uri|urlencode }}%20Check out this PPA on NYSC Connect: {{ ppa.name }}!" class="btn btn-outline-primary btn-sm" target="_blank">
+                                    <i class="fab fa-whatsapp"></i> WhatsApp
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Author info at bottom right -->
+                    {% if ppa.posted_by %}
+                        <div style="position: absolute; bottom: 10px; right: 10px; display: flex; align-items: center;">
+                            <div class="author-avatar me-2">
+                                {% if ppa.posted_by.profile.profile_picture %}
+                                    <img src="{{ ppa.posted_by.profile.profile_picture.url }}" alt="{{ ppa.posted_by.username }}'s avatar" loading="lazy" style="width: 30px; height: 30px; object-fit: cover; border-radius: 50%;">
+                                {% else %}
+                                    <div class="default-author-avatar" style="width: 30px; height: 30px; background: var(--default-avatar-bg); color: var(--default-avatar-text); display: flex; align-items: center; justify-content: center; font-size: 16px; border-radius: 50%;">{{ ppa.posted_by.username|first|upper }}</div>
+                                {% endif %}
+                            </div>
+                            <a href="{% url 'profile_view' ppa.posted_by.username %}" class="text-primary" style="text-decoration: none;">{{ ppa.posted_by.username }}</a>
+                        </div>
+                    {% else %}
+                        <div style="position: absolute; bottom: 10px; right: 10px;">
+                            <span class="text-muted">Unknown Author</span>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card mt-4">
+                    <div class="card-body">
+                        <h2 class="h4">Rate or Review</h2>
+                        {% if user.is_authenticated and not existing_review %}
+                            <form method="post" action="{% url 'submit_review' ppa.id %}" id="reviewForm">
+                                {% csrf_token %}
+                                <!-- Hidden input for rating -->
+                                <input type="hidden" name="rating" id="ratingInput" value="0">
+                                <!-- Star rating interface (visible only for new reviews) -->
+                                <div class="star-rating" data-max="5">
+                                    {% for i in "12345" %}
+                                        <span class="star" data-value="{{ forloop.counter }}">★</span>
+                                    {% endfor %}
+                                </div>
+                                <!-- Comment field (required for initial submission) -->
+                                <div class="mb-3">
+                                    <label for="id_review_textarea" class="form-label">Comment</label>
+                                    <textarea 
+                                        class="form-control review-textarea" 
+                                        id="id_review_textarea" 
+                                        name="{{ review_form.comment.name|default:'comment' }}" 
+                                        rows="3" 
+                                        placeholder="Add your comment here..." 
+                                        style="text-align: left !important; padding-left: 10px !important; direction: ltr !important;"
+                                        dir="ltr" required></textarea>
+                                </div>
+                                <div class="d-grid">
+                                    <button type="submit" class="btn btn-primary">Submit Rating and Review</button>
+                                </div>
+                            </form>
+                        {% elif user.is_authenticated and existing_review %}
+                            <p>You have already submitted a review.</p>
+                        {% else %}
+                            <p>Please <a href="{% url 'login' %}">login</a> to submit a review.</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="mt-4">
+            <h2 class="h4">Reviews</h2>
+            {% for review in ppa.reviews.all %}
+                <div class="card mb-2 position-relative">
+                    <div class="card-body">
+                        {% if user.is_authenticated and review.user == user %}
+                            <div class="position-absolute top-0 end-0 me-2 mt-2">
+                                <div class="dropdown">
+                                    <a class="text-muted" href="#" role="button" id="reviewActions{{ review.id }}" data-bs-toggle="dropdown" aria-expanded="false">
+                                        <i class="fas fa-ellipsis-v"></i>
+                                    </a>
+                                    <ul class="dropdown-menu" aria-labelledby="reviewActions{{ review.id }}">
+                                        <li><a class="dropdown-item" href="{% url 'submit_review' ppa.id %}?edit={{ review.id }}">Update Review</a></li>
+                                        <li><a class="dropdown-item text-danger" href="{% url 'delete_review' ppa.id %}" onclick="return confirm('Are you sure you want to delete your review?');">Delete Review</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+                        {% endif %}
+                        <p><strong><a href="{% url 'profile_view' review.user.username %}" class="text-primary text-decoration-none">{{ review.user.username }}</a></strong> - 
+                            <span class="text-warning">
+                                {% for i in "12345" %}
+                                    {% if forloop.counter0 < review.rating %}★{% else %}☆{% endif %}
+                                {% endfor %}
+                            </span> 
+                            {{ review.rating }} stars
+                        </p>
+                        <p>{{ review.comment|default:"No comment." }}</p>
+                        <small class="text-muted">{{ review.created_at }}</small>
+                    </div>
+                </div>
+            {% empty %}
+                <p>No reviews yet.</p>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Tooltip initialization
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl, {
+                customClass: 'custom-tooltip',
+                trigger: 'click'
+            });
+        });
+
+        // Hide tooltip when clicking outside
+        document.addEventListener('click', function (e) {
+            tooltipList.forEach(function (tooltip) {
+                if (!tooltip._element.contains(e.target)) {
+                    tooltip.hide();
+                }
+            });
+        });
+
+        // Star rating logic (only for new reviews)
+        const stars = document.querySelectorAll('.star-rating .star');
+        const ratingInput = document.getElementById('ratingInput');
+        if (ratingInput) {
+            let currentRating = parseInt(ratingInput.value) || 0;
+
+            stars.forEach(star => {
+                star.addEventListener('click', function () {
+                    currentRating = parseInt(this.getAttribute('data-value'));
+                    ratingInput.value = currentRating;
+                    updateStars();
+                    console.log(`Rating set to: ${currentRating}`);
+                });
+
+                star.addEventListener('mouseover', function () {
+                    const value = parseInt(this.getAttribute('data-value'));
+                    updateStars(value);
+                });
+
+                star.addEventListener('mouseout', function () {
+                    updateStars(currentRating);
+                });
+            });
+
+            function updateStars(hoverValue = currentRating) {
+                stars.forEach(star => {
+                    const value = parseInt(star.getAttribute('data-value'));
+                    if (value <= hoverValue) {
+                        star.classList.add('rated');
+                    } else {
+                        star.classList.remove('rated');
+                    }
+                });
+            }
+        }
+
+        // Form submission validation
+        const form = document.getElementById('reviewForm');
+        if (form) {
+            form.addEventListener('submit', function (e) {
+                const ratingInput = document.getElementById('ratingInput');
+                const textarea = document.getElementById('id_review_textarea');
+                if (parseInt(ratingInput.value) < 1 || !textarea.value.trim()) {
+                    e.preventDefault();
+                    alert('Please select a rating and provide a comment before submitting.');
+                } else {
+                    console.log('Submitting with rating:', ratingInput.value, 'and comment:', textarea.value);
+                }
+            });
+        }
+
+        // JavaScript fallback for text alignment
+        const textarea = document.getElementById('id_review_textarea');
+        if (textarea) {
+            textarea.style.textAlign = 'left';
+            textarea.style.paddingLeft = '10px';
+        }
+
+        // Share button functionality
+        const shareBtn = document.querySelector('.share-btn');
+        if (shareBtn) {
+            shareBtn.addEventListener('click', function() {
+                const shareUrl = this.getAttribute('data-url');
+                const shareData = {
+                    title: "NYSC Connect - {{ ppa.name }}",
+                    text: "Check out this PPA on NYSC Connect: {{ ppa.name }}!",
+                    url: shareUrl
+                };
+
+                if (navigator.share) {
+                    navigator.share(shareData)
+                        .then(() => console.log('Shared successfully'))
+                        .catch((error) => console.error('Error sharing:', error));
+                } else {
+                    this.nextElementSibling.classList.remove('d-none'); // Show fallback options
+                }
+            });
+        }
+
+        // Bookmark toggle functionality (aligned with other pages)
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value;
+        const bookmarkBtn = document.querySelector('.bookmark-btn');
+
+        if (bookmarkBtn && '{{ user.is_authenticated }}' === 'True') {
+            bookmarkBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                const ppaId = this.getAttribute('data-ppa-id');
+                const icon = this.querySelector('i');
+
+                fetch(`/ppa/${ppaId}/toggle-bookmark/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRFToken': csrfToken
+                    },
+                    body: JSON.stringify({})
+                })
+                .then(response => {
+                    if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.status === 'success') {
+                        if (data.action === 'added') {
+                            icon.classList.remove('far');
+                            icon.classList.add('fas');
+                        } else if (data.action === 'removed') {
+                            icon.classList.remove('fas');
+                            icon.classList.add('far');
+                        }
+                        window.showNotification(data.message, data.tags || 'info');
+                    } else {
+                        window.showNotification('Failed to update bookmark.', 'error');
+                    }
+                })
+                .catch(error => {
+                    console.error('Bookmark error:', error);
+                    window.showNotification('An error occurred while updating the bookmark.', 'error');
+                });
+            });
+        } else if (bookmarkBtn && '{{ user.is_authenticated }}' !== 'True') {
+            bookmarkBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                window.showNotification('Please log in to bookmark PPAs.', 'error');
+            });
+        }
+
+        // Initial bookmark status check
+        if (bookmarkBtn && '{{ user.is_authenticated }}' === 'True') {
+            const ppaId = bookmarkBtn.getAttribute('data-ppa-id');
+            const icon = bookmarkBtn.querySelector('i');
+            fetch(`/ppa/${ppaId}/check-bookmark/`, {
+                method: 'GET',
+                headers: { 'X-CSRFToken': csrfToken, 'X-Requested-With': 'XMLHttpRequest' }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.is_bookmarked) {
+                    icon.classList.remove('far');
+                    icon.classList.add('fas');
+                } else {
+                    icon.classList.remove('fas');
+                    icon.classList.add('far');
+                }
+            })
+            .catch(error => console.error(`Error checking bookmark for PPA ${ppaId}:`, error));
+        }
+    });
+</script>
+
+{% endblock %}
