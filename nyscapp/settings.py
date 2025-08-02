@@ -46,6 +46,8 @@ ALLOWED_HOSTS = ['*'] if DEBUG else os.getenv('ALLOWED_HOSTS', 'Corpsconnect.pyt
 
 
 
+# Security settings
+SECURE_SSL_REDIRECT = os.getenv('DJANGO_ENV') == 'production'
 
 
 
@@ -143,9 +145,9 @@ TEMPLATES = [
 
 
 # nyscapp/settings.py
-LOGIN_URL = '/login/'
-LOGIN_REDIRECT_URL = '/'  
-LOGOUT_REDIRECT_URL = '/'
+LOGIN_URL = 'login'
+LOGIN_REDIRECT_URL = 'ppa_finder'
+LOGOUT_REDIRECT_URL = 'ppa_finder'
 SITE_URL = 'http://127.0.0.1:8000'
 
 WSGI_APPLICATION = 'nyscapp.wsgi.application'
@@ -239,9 +241,8 @@ STATICFILES_DIRS = [
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 
-# Add LOGIN_URL to redirect unauthenticated users
-LOGIN_URL = 'nysc:login'
-LOGIN_REDIRECT_URL = 'nysc:ppa_finder'
+
+
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
@@ -259,14 +260,14 @@ EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
 DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL')
 
 # CSRF settings
-CSRF_COOKIE_SECURE = False  # Set to True in production
+CSRF_COOKIE_SECURE = not DEBUG  # Set to True in production
 CSRF_COOKIE_HTTPONLY = False
 CSRF_COOKIE_SAMESITE = 'Lax'  # Added for consistency
 CSRF_COOKIE_HTTPONLY = False
-CSRF_TRUSTED_ORIGINS = ['http://127.0.0.1:8000', 'http://localhost:8000']
+CSRF_TRUSTED_ORIGINS = ['http://127.0.0.1:8000', 'http://localhost:8000', 'https://Corpsconnect.pythonanywhere.com']
 
 SESSION_ENGINE = 'django.contrib.sessions.backends.db'  # Explicitly set
-SESSION_COOKIE_SECURE = False  # Set to True in production
+SESSION_COOKIE_SECURE = not DEBUG # Set to True in production
 SESSION_COOKIE_SAMESITE = 'Lax'
 SESSION_COOKIE_AGE = 1209600  # 2 weeks
 SESSION_SAVE_EVERY_REQUEST = True  # Save session on every request
@@ -275,5 +276,5 @@ SESSION_SAVE_EVERY_REQUEST = True  # Save session on every request
 if not DEBUG:
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
-    SECURE_SSL_REDIRECT = not IS_LOCAL  # Disable SSL redirect locally
+    SECURE_SSL_REDIRECT = True  
     X_FRAME_OPTIONS = 'DENY'
