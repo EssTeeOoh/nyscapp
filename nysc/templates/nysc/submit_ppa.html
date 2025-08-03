@@ -23,7 +23,7 @@
                                 {% endfor %}
                             </div>
                         {% endif %}
-                        <form method="post" enctype="multipart/form-data" novalidate>
+                        <form method="post" enctype="multipart/form-data" id="submitPpaForm" novalidate>
                             {% csrf_token %}
                             <!-- Hidden verification_status field -->
                             {{ form.verification_status }}
@@ -147,7 +147,9 @@
                             </div>
                             <!-- Submit Button -->
                             <div class="d-grid mt-4">
-                                <button type="submit" class="btn btn-primary btn-lg">Submit PPA</button>
+                                <button type="submit" class="btn btn-primary btn-lg" id="submitPpaButton">
+                                    Submit PPA
+                                </button>
                             </div>
                         </form>
                     </div>

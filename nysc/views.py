@@ -23,6 +23,7 @@ import json
 from pathlib import Path
 from django.http import HttpResponseForbidden
 import logging
+from django.core.exceptions import ObjectDoesNotExist
 import os
 from .utils import lgasData
 from .utils import get_state_from_coords
@@ -746,20 +747,41 @@ def submit_ppa(request):
             if not ppa.verification_document:
                 ppa.verification_status = 'not_submitted'
             ppa.save()
-            entry, _ = LeaderboardEntry.objects.get_or_create(user=request.user)
-            last_reset = LeaderboardReset.objects.filter(id=1).values_list('last_reset', flat=True).first()
-            if not last_reset or (timezone.now() > last_reset + timezone.timedelta(hours=24)):
+            
+            # Update leaderboard
+            try:
+                entry, _ = LeaderboardEntry.objects.get_or_create(user=request.user)
+                last_reset = LeaderboardReset.objects.filter(id=1).values_list('last_reset', flat=True).first()
+                if not last_reset or (timezone.now() > last_reset + timezone.timedelta(hours=24)):
+                    entry.total_ppas = request.user.ppas.count()
+                    entry.verified_ppas = request.user.ppas.filter(verified=True).count()
+                    entry.points = (entry.total_ppas * 10) + (entry.verified_ppas * 20)
+                    entry.save()
+            except ObjectDoesNotExist:
                 entry.total_ppas = request.user.ppas.count()
                 entry.verified_ppas = request.user.ppas.filter(verified=True).count()
                 entry.points = (entry.total_ppas * 10) + (entry.verified_ppas * 20)
                 entry.save()
+
             rank = LeaderboardEntry.objects.filter(points__gt=entry.points).count() + 1
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({
+                    'success': True,
+                    'message': 'PPA submitted successfully!',
+                    'redirect_url': reverse('ppa_finder')
+                })
             return redirect('ppa_finder')
         else:
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({
+                    'success': False,
+                    'message': 'Invalid form data',
+                    'errors': {field: str(errors[0]) for field, errors in form.errors.items()}
+                }, status=400)
             messages.error(request, 'Please correct the errors below.')
             for error in form.errors.values():
                 print(error)
-    else:
+    else:  # GET request
         form = PPASubmissionForm()
     return render(request, 'nysc/submit_ppa.html', {'form': form})
 
