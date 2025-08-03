@@ -188,6 +188,15 @@ class PPA(models.Model):
         help_text="Status of verification request"
     )
 
+    class Meta:
+        # Ensure no duplicate PPAs with the same name and address across all users
+        constraints = [
+            models.UniqueConstraint(
+                fields=['name', 'address'],
+                name='unique_ppa_name_address'
+            )
+        ]
+
     def save(self, *args, **kwargs):
         with transaction.atomic():
             if self.image:

@@ -7,7 +7,7 @@ from .views import (
     verify_email, forgot_password, resend_verification, CustomPasswordResetConfirmView,
     set_user_state, profile_view, profile_edit, ppa_edit, CustomLoginView, follow_user, unfollow_user, 
     request_ppa_verification, leaderboard, check_notifications, notifications, clear_notifications, mark_notifications_read, delete_review, marketplace_coming_soon, marketplace_subscribe,
-    marketplace_feedback, bookmarks_list, toggle_bookmark, check_bookmark, camp_info, delete_ppa,
+    marketplace_feedback, bookmarks_list, toggle_bookmark, check_bookmark, camp_info, delete_ppa, check_duplicate_ppa
     
 )
 from django.contrib.auth.views import LogoutView
@@ -23,7 +23,7 @@ urlpatterns = [
     path('logout/', LogoutView.as_view(next_page='ppa_finder'), name='logout'),
     path('register/', register, name='register'),
     path('verify-email/<uuid:token>/', verify_email, name='verify_email'),
-    
+    path('check-duplicate-ppa/', check_duplicate_ppa, name='check_duplicate_ppa'),
     path('set_user_state/', set_user_state, name='set_user_state'),
     path('forgot-password/', forgot_password, name='forgot_password'),
     path('resend-verification/', resend_verification, name='resend_verification'),

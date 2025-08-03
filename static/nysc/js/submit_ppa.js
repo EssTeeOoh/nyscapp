@@ -4,14 +4,18 @@ document.addEventListener('DOMContentLoaded', function() {
     const lgaLoading = document.getElementById('lga-loading');
     const form = document.querySelector('form');
     const submitButton = document.getElementById('submitPpaButton');
+    const nameInput = document.getElementById('id_name');
+    const addressInput = document.getElementById('id_address');
 
-    if (!stateSelect || !lgaSelect || !lgaLoading || !form || !submitButton) {
+    if (!stateSelect || !lgaSelect || !lgaLoading || !form || !submitButton || !nameInput || !addressInput) {
         console.error('Missing elements:', {
             stateSelect: !!stateSelect,
             lgaSelect: !!lgaSelect,
             lgaLoading: !!lgaLoading,
             form: !!form,
-            submitButton: !!submitButton
+            submitButton: !!submitButton,
+            nameInput: !!nameInput,
+            addressInput: !!addressInput
         });
         return;
     }
@@ -52,7 +56,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 option.textContent = lga;
                 lgaSelect.appendChild(option);
             });
-            // Set pre-selected LGA if it exists
             const preSelectedLga = lgaSelect.getAttribute('data-initial-lga');
             if (preSelectedLga && lgas.includes(preSelectedLga)) {
                 lgaSelect.value = preSelectedLga;
@@ -67,28 +70,28 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Initialize and populate LGAs
     fetchLgaData().then(lgaData => {
-        // Populate LGAs on page load with initial state
         const initialState = stateSelect.value;
         if (initialState) {
             console.log('Initializing with state:', initialState);
             populateLgas(initialState, lgaData);
         }
 
-        // Populate LGAs on state change
         stateSelect.addEventListener('change', function() {
             const selectedState = this.value;
             console.log('State changed to:', selectedState);
             populateLgas(selectedState, lgaData);
         });
 
-        // Handle form submission with AJAX
+        // Handle form submission with AJAX and duplication check
         form.addEventListener('submit', function(event) {
-            event.preventDefault(); // Prevent default form submission
+            event.preventDefault();
 
             const selectedState = stateSelect.value;
             const selectedLga = lgaSelect.value;
+            const ppaName = nameInput.value.trim();
+            const ppaAddress = addressInput.value.trim();
 
-            console.log('Validating form:', { state: selectedState, lga: selectedLga });
+            console.log('Validating form:', { state: selectedState, lga: selectedLga, name: ppaName, address: ppaAddress });
 
             if (selectedState && !selectedLga) {
                 console.warn('No LGA selected for state:', selectedState);
@@ -112,20 +115,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
 
-            // Disable submit button and show loading icon
-            submitButton.disabled = true;
-            submitButton.innerHTML = `
-                <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-                Submitting...
-            `;
+            if (!ppaName || !ppaAddress) {
+                alert('PPA name and address are required.');
+                return;
+            }
 
-            // Collect form data
-            const formData = new FormData(form);
-
-            // Send AJAX request
-            fetch(window.location.href, {
-                method: 'POST',
-                body: formData,
+            // Check for duplicates before submission
+            fetch(`/check-duplicate-ppa/?name=${encodeURIComponent(ppaName)}&address=${encodeURIComponent(ppaAddress)}&state=${encodeURIComponent(selectedState)}&lga=${encodeURIComponent(selectedLga)}`, {
+                method: 'GET',
                 headers: {
                     'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
                     'X-Requested-With': 'XMLHttpRequest'
@@ -138,34 +135,70 @@ document.addEventListener('DOMContentLoaded', function() {
                 return response.json();
             })
             .then(data => {
-                console.log('Server response:', data);
-                if (data.success) {
-                    window.location.href = data.redirect_url || '/'; // Redirect on success
-                } else {
-                    alert(data.message || 'Submission failed. Please check the form.');
-                    if (data.errors) {
-                        // Display form errors (optional: update UI with errors)
-                        console.log('Form errors:', data.errors);
-                        for (const [field, error] of Object.entries(data.errors)) {
-                            const input = form.querySelector(`#id_${field}`);
-                            if (input) {
-                                const feedback = document.createElement('div');
-                                feedback.className = 'invalid-feedback d-block';
-                                feedback.textContent = error;
-                                input.parentElement.appendChild(feedback);
-                                input.classList.add('is-invalid');
-                            }
-                        }
-                    }
-                    // Re-enable button on failure
+                if (data.is_duplicate) {
+                    alert(`A PPA with the name "${ppaName}" and address "${ppaAddress}" already exists. Please provide a unique PPA.`);
                     submitButton.disabled = false;
                     submitButton.innerHTML = 'Submit PPA';
+                    return;
                 }
+                // Proceed with submission if not duplicate
+                submitButton.disabled = true;
+                submitButton.innerHTML = `
+                    <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                    Submitting...
+                `;
+
+                const formData = new FormData(form);
+
+                fetch(window.location.href, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('Server response:', data);
+                    if (data.success) {
+                        window.location.href = data.redirect_url || '/';
+                    } else {
+                        alert(data.message || 'Submission failed. Please check the form.');
+                        if (data.errors) {
+                            console.log('Form errors:', data.errors);
+                            for (const [field, error] of Object.entries(data.errors)) {
+                                const input = form.querySelector(`#id_${field}`);
+                                if (input) {
+                                    const feedback = document.createElement('div');
+                                    feedback.className = 'invalid-feedback d-block';
+                                    feedback.textContent = error;
+                                    const existingFeedback = input.parentElement.querySelector('.invalid-feedback');
+                                    if (existingFeedback) existingFeedback.remove();
+                                    input.parentElement.appendChild(feedback);
+                                    input.classList.add('is-invalid');
+                                }
+                            }
+                        }
+                        submitButton.disabled = false;
+                        submitButton.innerHTML = 'Submit PPA';
+                    }
+                })
+                .catch(error => {
+                    console.error('Submission error:', error);
+                    alert('An error occurred. Please try again.');
+                    submitButton.disabled = false;
+                    submitButton.innerHTML = 'Submit PPA';
+                });
             })
             .catch(error => {
-                console.error('Submission error:', error);
-                alert('An error occurred. Please try again.');
-                // Re-enable button on error
+                console.error('Duplicate check error:', error);
+                alert('An error occurred while checking for duplicates. Please try again.');
                 submitButton.disabled = false;
                 submitButton.innerHTML = 'Submit PPA';
             });

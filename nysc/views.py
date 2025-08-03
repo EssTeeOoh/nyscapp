@@ -35,33 +35,42 @@ from django.db.models import Avg
 from django.views.decorators.cache import never_cache
 logger = logging.getLogger(__name__)
 
-'''@login_required
-@csrf_exempt
-def geocode_location(request):
-    if request.method == 'POST':
-        try:
-            data = json.loads(request.body.decode('utf-8'))
-            lat = data.get('lat')
-            lon = data.get('lon')
-            if lat and lon:
-                api_key = os.getenv('OPENCAGE_API_KEY')
-                if not api_key:
-                    return JsonResponse({'error': 'OpenCage API key not configured'}, status=500)
-                url = f"https://api.opencagedata.com/geocode/v1/json?q={lat}+{lon}&key={api_key}"
-                response = requests.get(url)
-                if response.status_code == 200:
-                    result = response.json()
-                    return JsonResponse(result)
-                else:
-                    return JsonResponse({'error': f'Geocoding failed with status {response.status_code}: {response.text}'}, status=500)
-            return JsonResponse({'error': 'Invalid data'}, status=400)
-        except json.JSONDecodeError:
-            return JsonResponse({'error': 'Invalid JSON data'}, status=400)
-        except requests.RequestException as e:
-            return JsonResponse({'error': f'Request failed: {str(e)}'}, status=500)
-        except Exception as e:
-            return JsonResponse({'error': f'An unexpected error occurred: {str(e)}'}, status=500)
-    return JsonResponse({'error': 'Invalid request method'}, status=405)'''
+
+@login_required
+@require_GET
+def check_duplicate_ppa(request):
+    ppa_name = request.GET.get('name', '').strip()
+    ppa_address = request.GET.get('address', '').strip()
+    ppa_state = request.GET.get('state', '')
+    ppa_lga = request.GET.get('lga', '')
+
+    if not ppa_name or not ppa_address:
+        return JsonResponse({'is_duplicate': False, 'message': 'Name and address are required for duplicate check.'}, status=400)
+
+    # Check for existing PPA with the same name and address (across all users)
+    duplicate_ppa = PPA.objects.filter(
+        name__iexact=ppa_name,
+        address__iexact=ppa_address
+    ).exclude(posted_by=request.user).exists()
+
+    # Check if the current user has already posted this PPA
+    user_duplicate = PPA.objects.filter(
+        name__iexact=ppa_name,
+        address__iexact=ppa_address,
+        posted_by=request.user
+    ).exists()
+
+    is_duplicate = duplicate_ppa or user_duplicate
+    message = (
+        'A PPA with this name and address already exists.' if duplicate_ppa else
+        'You have already submitted a PPA with this name and address.' if user_duplicate else
+        ''
+    )
+
+    return JsonResponse({
+        'is_duplicate': is_duplicate,
+        'message': message
+    })
 
 @login_required
 def camp_info(request):
@@ -744,6 +753,31 @@ def submit_ppa(request):
         if form.is_valid():
             ppa = form.save(commit=False)
             ppa.posted_by = request.user
+            ppa_name = ppa.name.strip()
+            ppa_address = ppa.address.strip()
+
+            # Check for duplicates
+            duplicate_ppa = PPA.objects.filter(
+                name__iexact=ppa_name,
+                address__iexact=ppa_address
+            ).exclude(posted_by=request.user).exists()
+            user_duplicate = PPA.objects.filter(
+                name__iexact=ppa_name,
+                address__iexact=ppa_address,
+                posted_by=request.user
+            ).exists()
+
+            if duplicate_ppa or user_duplicate:
+                message = 'A PPA with this name and address already exists.' if duplicate_ppa else 'You have already submitted this PPA.'
+                if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                    return JsonResponse({
+                        'success': False,
+                        'message': message,
+                        'errors': {'name': [message], 'address': [message]}
+                    }, status=400)
+                messages.error(request, message)
+                return render(request, 'nysc/submit_ppa.html', {'form': form})
+
             if not ppa.verification_document:
                 ppa.verification_status = 'not_submitted'
             ppa.save()
