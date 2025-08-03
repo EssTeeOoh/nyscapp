@@ -7,26 +7,34 @@ import geojson
 from shapely.geometry import shape, Point
 from django.conf import settings
 
-
 logger = logging.getLogger(__name__)
 
 # Define BASE_DIR to match settings.py
-BASE_DIR = Path(__file__).resolve().parent.parent 
-
-
-
+BASE_DIR = Path(__file__).resolve().parent.parent
 
 def load_states_geojson():
-    static_path = os.path.join(settings.STATICFILES_DIRS[0], 'nysc', 'json', 'nigeria_states.geojson.gz')
-    with gzip.open(static_path, 'rt', encoding='utf-8') as f:
-        return geojson.load(f)['features']
+    # Use BASE_DIR for local development and STATIC_ROOT for production
+    static_path = os.path.join(BASE_DIR, 'static', 'nysc', 'json', 'nigeria_states.geojson.gz')
+    if not os.path.exists(static_path):
+        static_path = os.path.join(settings.STATIC_ROOT, 'nysc', 'json', 'nigeria_states.geojson.gz')
+        if not os.path.exists(static_path):
+            logger.error(f"GeoJSON file not found at {static_path}")
+            return []
+    try:
+        with gzip.open(static_path, 'rt', encoding='utf-8') as f:
+            return geojson.load(f)['features']
+    except Exception as e:
+        logger.error(f"Error loading GeoJSON: {str(e)}")
+        return []
 
 def get_state_from_coords(lat, lon):
-    point = Point(float(lon), float(lat))  # [lon, lat] order
+    point = Point(float(lon), float(lat))  # [lon, lat] order for Shapely
     for feature in load_states_geojson():
-        polygon = shape(feature['geometry'])
-        if polygon.contains(point):
-            return feature['properties']['statename']
+        if 'geometry' in feature and feature['geometry']:
+            polygon = shape(feature['geometry'])
+            if polygon.contains(point):
+                return feature['properties']['statename']
+    logger.warning(f"No state found for coordinates: {lat}, {lon}")
     return None
 
 # Load LGA data from JSON file

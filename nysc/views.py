@@ -34,7 +34,7 @@ from django.db.models import Avg
 from django.views.decorators.cache import never_cache
 logger = logging.getLogger(__name__)
 
-@login_required
+'''@login_required
 @csrf_exempt
 def geocode_location(request):
     if request.method == 'POST':
@@ -60,7 +60,7 @@ def geocode_location(request):
             return JsonResponse({'error': f'Request failed: {str(e)}'}, status=500)
         except Exception as e:
             return JsonResponse({'error': f'An unexpected error occurred: {str(e)}'}, status=500)
-    return JsonResponse({'error': 'Invalid request method'}, status=405)
+    return JsonResponse({'error': 'Invalid request method'}, status=405)'''
 
 @login_required
 def camp_info(request):
@@ -506,10 +506,13 @@ def ppa_edit(request, ppa_id):
 def set_user_state(request):
     if request.method == 'POST':
         try:
-            data = request.POST if request.POST else json.loads(request.body.decode('utf-8'))
+            # Prefer JSON body over POST data
+            data = json.loads(request.body.decode('utf-8')) if request.body else {}
             logger.debug(f"Received data in set_user_state: {data}")
-            if 'lat' in data and 'lon' in data:
-                lat, lon = float(data['lat']), float(data['lon'])
+            lat = data.get('lat')
+            lon = data.get('lon')
+            if lat is not None and lon is not None:
+                lat, lon = float(lat), float(lon)
                 logger.info(f"Processing geolocation: lat={lat}, lon={lon}")
                 state = get_state_from_coords(lat, lon)
                 if state:
@@ -519,10 +522,13 @@ def set_user_state(request):
                     return JsonResponse({'status': 'success', 'state': state})
                 logger.warning(f"No state found for coordinates: {lat}, {lon}")
                 return JsonResponse({'status': 'error', 'message': 'No state found for given coordinates'}, status=400)
-            return JsonResponse({'status': 'error', 'message': 'Invalid data'}, status=400)
+            return JsonResponse({'status': 'error', 'message': 'Missing lat or lon'}, status=400)
         except json.JSONDecodeError as e:
             logger.error(f"Invalid JSON data in set_user_state: {str(e)}")
             return JsonResponse({'status': 'error', 'message': 'Invalid request data'}, status=400)
+        except ValueError as e:
+            logger.error(f"Invalid coordinate values: {str(e)}")
+            return JsonResponse({'status': 'error', 'message': 'Invalid coordinate format'}, status=400)
         except Exception as e:
             logger.error(f"Error in set_user_state: {str(e)}", exc_info=True)
             return JsonResponse({'status': 'error', 'message': 'An error occurred'}, status=500)

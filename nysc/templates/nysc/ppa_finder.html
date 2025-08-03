@@ -217,34 +217,40 @@
             return;
         }
 
-        // Enhanced geolocation logic
-        function attemptGeolocation() {
+        function attemptGeolocation(retryCount = 0, maxRetries = 3) {
+            if (retryCount >= maxRetries) {
+                console.error(`Geolocation failed after ${maxRetries} attempts.`);
+                alert('Geolocation failed. Please select your state manually or check your browser settings.');
+                return;
+            }
+
             if (!sessionStorage.getItem('locationDetected') || !sessionStorage.getItem('savedState')) {
-                console.log('Attempting automatic geolocation...');
+                console.log(`Attempting geolocation (Attempt ${retryCount + 1}/${maxRetries})...`);
                 if (navigator.geolocation) {
                     navigator.geolocation.getCurrentPosition(
                         (position) => {
                             const lat = position.coords.latitude;
                             const lon = position.coords.longitude;
-                            console.log('Geolocation success:', { lat, lon });
+                            console.log('Geolocation success - Coordinates:', { lat, lon });
 
                             fetch('/set_user_state/', {
                                 method: 'POST',
                                 headers: {
                                     'Content-Type': 'application/json',
-                                    'X-CSRFToken': '{{ csrf_token }}'
+                                    'X-CSRFToken': '{{ csrf_token }}',
+                                    'X-Requested-With': 'XMLHttpRequest'
                                 },
                                 body: JSON.stringify({ lat, lon })
                             })
                             .then(response => {
-                                console.log('Fetch response status:', response.status);
+                                console.log('Fetch response:', { status: response.status, statusText: response.statusText });
                                 if (!response.ok) {
-                                    throw new Error(`HTTP error! status: ${response.status}`);
+                                    throw new Error(`HTTP error! status: ${response.status} - ${response.statusText}`);
                                 }
-                                return response.json(); // Changed to json() for structured data
+                                return response.json();
                             })
                             .then(data => {
-                                console.log('Geolocation response:', data);
+                                console.log('Server response:', data);
                                 if (data.status === 'success' && data.state) {
                                     sessionStorage.setItem('locationDetected', 'true');
                                     sessionStorage.setItem('savedState', data.state);
@@ -252,22 +258,28 @@
                                     ppaSearchForm.submit();
                                 } else {
                                     console.warn('Geolocation failed to set state:', data.message);
+                                    attemptGeolocation(retryCount + 1, maxRetries);
                                 }
                             })
                             .catch(error => {
                                 console.error('Geolocation fetch error:', error.message || error);
+                                attemptGeolocation(retryCount + 1, maxRetries);
                             });
                         },
                         (error) => {
-                            console.error('Geolocation error:', error.message || error);
+                            console.error('Geolocation error:', { code: error.code, message: error.message });
                             if (error.code === error.PERMISSION_DENIED) {
                                 console.log('User denied geolocation permission.');
+                                alert('Geolocation permission denied. Please select your state manually.');
+                            } else {
+                                attemptGeolocation(retryCount + 1, maxRetries);
                             }
                         },
-                        { timeout: 10000 } // Add timeout to prevent hanging
+                        { timeout: 10000, maximumAge: 60000, enableHighAccuracy: true }
                     );
                 } else {
                     console.error('Geolocation is not supported by this browser.');
+                    alert('Geolocation is not supported. Please select your state manually.');
                 }
             } else {
                 console.log('Location already detected, using saved state.');
@@ -281,10 +293,8 @@
             }
         }
 
-        // Trigger geolocation with a slight delay to ensure DOM readiness
-        setTimeout(attemptGeolocation, 500);
+        setTimeout(() => attemptGeolocation(), 1000);
 
-        // Tooltip initialization
         const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
         const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => 
             new bootstrap.Tooltip(tooltipTriggerEl, { customClass: 'custom-tooltip', trigger: 'click' })
@@ -298,7 +308,6 @@
             });
         });
 
-        // LGA population logic
         function populateLgas(selectedState) {
             lgaSelect.innerHTML = '<option value="">All LGAs</option>';
             lgaLoading.classList.remove('d-none');
@@ -336,7 +345,6 @@
         stateSelect.addEventListener('change', () => populateLgas(stateSelect.value));
         populateLgas(stateSelect.value);
 
-        // Bookmark logic with event delegation
         const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value;
 
         function updateBookmarkStatus() {
@@ -403,7 +411,6 @@
 
         updateBookmarkStatus();
 
-        // Pagination logic
         let currentPage = {{ page_obj.number|default:1 }};
 
         function updatePPAs(page) {
