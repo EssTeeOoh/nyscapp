@@ -148,7 +148,7 @@ TEMPLATES = [
 LOGIN_URL = 'login'
 LOGIN_REDIRECT_URL = 'ppa_finder'
 LOGOUT_REDIRECT_URL = 'ppa_finder'
-SITE_URL = 'http://127.0.0.1:8000'
+
 
 WSGI_APPLICATION = 'nyscapp.wsgi.application'
 
