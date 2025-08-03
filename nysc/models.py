@@ -24,10 +24,10 @@ class UserProfile(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     last_seen = models.DateTimeField(null=True, blank=True, db_index=True)  # Added with index
     is_public = models.BooleanField(default=True, help_text="Allow user to appear on the leaderboard")
-    notify_follow = models.BooleanField(default=True, help_text="Receive notifications when someone follows you.")
-    notify_rating = models.BooleanField(default=True, help_text="Receive notifications when a post is rated.")
-    notify_leaderboard = models.BooleanField(default=True, help_text="Receive notifications when you appear on the leaderboard.")
-    notify_post = models.BooleanField(default=True, help_text="Receive notifications when someone I follow posts.")
+    notify_follow = models.BooleanField(default=False, help_text="Receive notifications when someone follows you.")
+    notify_rating = models.BooleanField(default=False, help_text="Receive notifications when a post is rated.")
+    notify_leaderboard = models.BooleanField(default=False, help_text="Receive notifications when you appear on the leaderboard.")
+    notify_post = models.BooleanField(default=False, help_text="Receive notifications when someone I follow posts.")
 
     def __str__(self):
         return f"{self.user.username}'s Profile"

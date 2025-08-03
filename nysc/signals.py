@@ -6,8 +6,21 @@ from .models import Follow, PPA, PPAReview, LeaderboardEntry, Notification
 from .tasks import notify_follow_task, notify_rating_task, notify_leaderboard_task, notify_followed_post_task
 import logging
 from django.utils import timezone
+from django.contrib.auth.models import User
+from .models import UserProfile
 
 logger = logging.getLogger(__name__)
+
+
+
+@receiver(post_save, sender=User)
+def create_user_profile(sender, instance, created, **kwargs):
+    if created:
+        UserProfile.objects.create(user=instance)
+
+@receiver(post_save, sender=User)
+def save_user_profile(sender, instance, **kwargs):
+    instance.profile.save()
 
 @receiver(post_save, sender=Follow)
 def follow_notification(sender, instance, created, **kwargs):

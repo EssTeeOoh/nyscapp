@@ -51,7 +51,7 @@
         </form>
 
         <div class="mt-4">
-            <h2 class="h3 mb-4" style="color: var(--card-text);">
+            <h2 class="h3 mb-4 text-center" style="color: var(--card-text);">
                 {% if user_state and not ppas and not request.GET %}Recommended PPAs in {{ user_state }}{% else %}Recommended PPAs{% endif %}
             </h2>
             <div id="ppa-container" class="row row-cols-1 row-cols-md-3 g-4">
@@ -112,7 +112,7 @@
                     </div>
                 {% empty %}
                     <div class="col-12 text-center">
-                        <p>No recommended PPAs found. <a href="{% url 'submit_ppa' %}" class="btn btn-outline-primary" aria-label="Submit a PPA">Submit a PPA!</a></p>
+                        <p>No recommended PPAs found.</p>
                     </div>
                 {% endfor %}
             </div>
@@ -126,7 +126,7 @@
         </div>
 
         <section class="py-5">
-            <h2 class="h3 mb-4" style="color: var(--card-text);">Featured PPAs (Highly Rated)</h2>
+            <h2 class="h3 mb-4 text-center" style="color: var(--card-text);">Featured PPAs (Highly Rated)</h2>
             {% if featured_ppas %}
                 <div class="row row-cols-1 row-cols-md-3 g-4"> <!-- Ensure g-4 is applied -->
                     {% for ppa in featured_ppas|slice:":3" %}
@@ -217,66 +217,72 @@
             return;
         }
 
-        // Automatic geolocation on page load (logic retained, display removed)
-        if (!sessionStorage.getItem('locationDetected')) {
-            console.log('Attempting automatic geolocation...');
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(
-                    (position) => {
-                        const lat = position.coords.latitude;
-                        const lon = position.coords.longitude;
-                        console.log('Geolocation success:', { lat, lon });
+        // Enhanced geolocation logic
+        function attemptGeolocation() {
+            if (!sessionStorage.getItem('locationDetected') || !sessionStorage.getItem('savedState')) {
+                console.log('Attempting automatic geolocation...');
+                if (navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition(
+                        (position) => {
+                            const lat = position.coords.latitude;
+                            const lon = position.coords.longitude;
+                            console.log('Geolocation success:', { lat, lon });
 
-                        fetch('/set_user_state/', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'X-CSRFToken': '{{ csrf_token }}'
-                            },
-                            body: JSON.stringify({ lat, lon })
-                        })
-                        .then(response => {
-                            console.log('Fetch response status:', response.status);
-                            if (!response.ok) {
-                                console.error('Server error:', response.statusText);
-                                throw new Error(`HTTP error! status: ${response.status}`);
+                            fetch('/set_user_state/', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'X-CSRFToken': '{{ csrf_token }}'
+                                },
+                                body: JSON.stringify({ lat, lon })
+                            })
+                            .then(response => {
+                                console.log('Fetch response status:', response.status);
+                                if (!response.ok) {
+                                    throw new Error(`HTTP error! status: ${response.status}`);
+                                }
+                                return response.json(); // Changed to json() for structured data
+                            })
+                            .then(data => {
+                                console.log('Geolocation response:', data);
+                                if (data.status === 'success' && data.state) {
+                                    sessionStorage.setItem('locationDetected', 'true');
+                                    sessionStorage.setItem('savedState', data.state);
+                                    stateSelect.value = data.state;
+                                    ppaSearchForm.submit();
+                                } else {
+                                    console.warn('Geolocation failed to set state:', data.message);
+                                }
+                            })
+                            .catch(error => {
+                                console.error('Geolocation fetch error:', error.message || error);
+                            });
+                        },
+                        (error) => {
+                            console.error('Geolocation error:', error.message || error);
+                            if (error.code === error.PERMISSION_DENIED) {
+                                console.log('User denied geolocation permission.');
                             }
-                            return response.text();
-                        })
-                        .then(text => {
-                            console.log('Raw response:', text);
-                            const data = JSON.parse(text);
-                            console.log('Parsed response:', data);
-                            if (data.status === 'success' && data.state) {
-                                sessionStorage.setItem('locationDetected', 'true');
-                                sessionStorage.setItem('savedState', data.state);
-                                stateSelect.value = data.state;
-                                ppaSearchForm.submit();
-                            } else {
-                                console.warn('Geolocation failed to set state:', data.message);
-                            }
-                        })
-                        .catch(error => {
-                            console.error('Fetch error:', error.message || error);
-                        });
-                    },
-                    (error) => {
-                        console.error('Geolocation error:', error.message || error);
-                    }
-                );
+                        },
+                        { timeout: 10000 } // Add timeout to prevent hanging
+                    );
+                } else {
+                    console.error('Geolocation is not supported by this browser.');
+                }
             } else {
-                console.error('Geolocation is not supported by this browser.');
-            }
-        } else {
-            console.log('Location already detected, skipping geolocation.');
-            const savedState = sessionStorage.getItem('savedState');
-            if (savedState) {
-                stateSelect.value = savedState;
-                if (!window.location.search) {
-                    ppaSearchForm.submit();
+                console.log('Location already detected, using saved state.');
+                const savedState = sessionStorage.getItem('savedState');
+                if (savedState && stateSelect.querySelector(`option[value="${savedState}"]`)) {
+                    stateSelect.value = savedState;
+                    if (!window.location.search) {
+                        ppaSearchForm.submit();
+                    }
                 }
             }
         }
+
+        // Trigger geolocation with a slight delay to ensure DOM readiness
+        setTimeout(attemptGeolocation, 500);
 
         // Tooltip initialization
         const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
@@ -357,7 +363,6 @@
             });
         }
 
-        // Use event delegation for bookmark buttons
         ppaContainer.addEventListener('click', (e) => {
             const button = e.target.closest('.bookmark-btn');
             if (!button || '{{ user.is_authenticated }}' !== 'True') return;
@@ -396,7 +401,6 @@
             });
         });
 
-        // Initial bookmark status update
         updateBookmarkStatus();
 
         // Pagination logic
@@ -433,7 +437,7 @@
                     prevBtn.classList.toggle('disabled', !data.has_previous);
                     nextBtn.classList.toggle('disabled', !data.has_next);
                     pageNumber.textContent = `Page ${currentPage} of ${data.total_pages}`;
-                    updateBookmarkStatus(); // Re-apply bookmark status after content update
+                    updateBookmarkStatus();
                     window.scrollTo({ top: 0, behavior: 'smooth' });
                 } else {
                     console.error('Server returned failure:', data.error);
@@ -446,7 +450,6 @@
             });
         }
 
-        // Event delegation for pagination buttons
         paginationControls.addEventListener('click', (e) => {
             e.preventDefault();
             const prevBtn = e.target.closest('#prev-btn');
@@ -459,13 +462,11 @@
             }
         });
 
-        // Handle back/forward browser navigation
         window.addEventListener('popstate', (event) => {
             const page = event.state?.page || 1;
             updatePPAs(page);
         });
 
-        // Trigger initial update if paginated
         if ('{{ is_paginated }}' === 'True') {
             const urlParams = new URLSearchParams(window.location.search);
             const initialPage = parseInt(urlParams.get('page')) || {{ page_obj.number|default:1 }};

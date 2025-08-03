@@ -11,8 +11,8 @@
 
         <!-- Email Subscription Form -->
         <div class="mb-4">
-            <form id="emailSubscriptionForm" class="d-inline-block w-50">
-                {% csrf_token %} <!-- Ensure CSRF token is in the form -->
+            <form id="emailSubscriptionForm" class="d-inline-block">
+                {% csrf_token %}
                 <div class="input-group">
                     <input type="email" id="subscriptionEmail" name="email" class="form-control" placeholder="Enter your email" required>
                     <button type="submit" class="btn btn-primary" style="background-color: var(--btn-primary-bg); color: var(--btn-primary-text);">Notify Me</button>
@@ -25,7 +25,7 @@
         <div class="mt-4">
             <h3 class="h5 mb-3">What Improvements Would You Like to See?</h3>
             <form id="feedbackForm" class="w-50 mx-auto">
-                {% csrf_token %} <!-- Ensure CSRF token is in the form -->
+                {% csrf_token %}
                 <div class="mb-3">
                     <textarea id="feedbackText" name="feedback" class="form-control" rows="4" placeholder="Share your suggestions..." required></textarea>
                 </div>
@@ -36,3 +36,4 @@
     </div>
 </section>
 {% endblock %}
+

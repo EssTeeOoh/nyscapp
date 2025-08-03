@@ -62,7 +62,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django.contrib.sites',  # Required for allauth
     'social_django',
-    'nysc',
+    'nysc.apps.NyscConfig',
     'sslserver',
     
 ]
