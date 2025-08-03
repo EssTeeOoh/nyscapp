@@ -69,7 +69,7 @@ INSTALLED_APPS = [
 
 
 
-SITE_URL = 'http://127.0.0.1:8000'
+SITE_URL = 'https://Corpsconnect.pythonanywhere.com'
 SITE_ID = 1
 
 
