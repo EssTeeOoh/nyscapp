@@ -13,7 +13,6 @@ logger = logging.getLogger(__name__)
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 def load_states_geojson():
-    # Use BASE_DIR for local development and STATIC_ROOT for production
     static_path = os.path.join(BASE_DIR, 'static', 'nysc', 'json', 'nigeria_states.geojson.gz')
     if not os.path.exists(static_path):
         static_path = os.path.join(settings.STATIC_ROOT, 'nysc', 'json', 'nigeria_states.geojson.gz')
@@ -22,18 +21,34 @@ def load_states_geojson():
             return []
     try:
         with gzip.open(static_path, 'rt', encoding='utf-8') as f:
-            return geojson.load(f)['features']
+            data = geojson.load(f)
+            logger.debug(f"Loaded GeoJSON with {len(data['features'])} features")
+            return data['features']
     except Exception as e:
-        logger.error(f"Error loading GeoJSON: {str(e)}")
+        logger.error(f"Error loading GeoJSON: {str(e)}", exc_info=True)
         return []
 
 def get_state_from_coords(lat, lon):
     point = Point(float(lon), float(lat))  # [lon, lat] order for Shapely
-    for feature in load_states_geojson():
+    logger.debug(f"Checking point: {point} with coords {lat}, {lon}")
+    features = load_states_geojson()
+    if not features:
+        logger.error("No GeoJSON features loaded")
+        return None
+
+    for feature in features:
         if 'geometry' in feature and feature['geometry']:
-            polygon = shape(feature['geometry'])
-            if polygon.contains(point):
-                return feature['properties']['statename']
+            try:
+                polygon = shape(feature['geometry'])
+                # Round coordinates to 4 decimal places for consistency
+                point_rounded = Point(round(float(lon), 4), round(float(lat), 4))
+                if polygon.contains(point_rounded):
+                    state = feature['properties'].get('statename')
+                    logger.info(f"Found state: {state} for coordinates {lat}, {lon}")
+                    return state
+            except Exception as e:
+                logger.error(f"Error processing polygon for feature {feature.get('properties', {})}: {str(e)}", exc_info=True)
+                continue
     logger.warning(f"No state found for coordinates: {lat}, {lon}")
     return None
 

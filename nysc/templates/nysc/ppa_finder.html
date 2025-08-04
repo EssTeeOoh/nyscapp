@@ -217,85 +217,96 @@
             return;
         }
 
-        function attemptGeolocation(retryCount = 0, maxRetries = 3) {
-            if (retryCount >= maxRetries) {
-                console.error(`Geolocation failed after ${maxRetries} attempts.`);
-                alert('Geolocation failed. Please select your state manually or check your browser settings.');
+        function attemptGeolocation(retryCount = 0, maxRetries = 1) {
+            // Skip if state is already set or detected
+            const savedState = sessionStorage.getItem('savedState');
+            if (savedState && stateSelect.querySelector(`option[value="${savedState}"]`)) {
+                console.log('Using saved state:', savedState);
+                stateSelect.value = savedState;
+                if (!window.location.search) {
+                    ppaSearchForm.submit();
+                }
                 return;
             }
 
-            if (!sessionStorage.getItem('locationDetected') || !sessionStorage.getItem('savedState')) {
-                console.log(`Attempting geolocation (Attempt ${retryCount + 1}/${maxRetries})...`);
-                if (navigator.geolocation) {
-                    navigator.geolocation.getCurrentPosition(
-                        (position) => {
-                            const lat = position.coords.latitude;
-                            const lon = position.coords.longitude;
-                            console.log('Geolocation success - Coordinates:', { lat, lon });
+            if (retryCount >= maxRetries) {
+                console.error(`Geolocation failed after ${maxRetries} attempts.`);
+                // Show alert only on first failure
+                if (retryCount === maxRetries) {
+                    alert('Geolocation failed. Please select your state manually or check your location settings.');
+                }
+                return;
+            }
 
-                            // Bypass cache for dynamic endpoint
-                            fetch('/set_user_state/', {
-                                method: 'POST',
-                                headers: {
-                                    'Content-Type': 'application/json',
-                                    'X-CSRFToken': '{{ csrf_token }}',
-                                    'X-Requested-With': 'XMLHttpRequest',
-                                    'Cache-Control': 'no-cache' // Prevent caching
-                                },
-                                body: JSON.stringify({ lat, lon })
-                            })
-                            .then(response => {
-                                console.log('Fetch response:', { status: response.status, statusText: response.statusText });
-                                if (!response.ok) {
-                                    throw new Error(`HTTP error! status: ${response.status} - ${response.statusText}`);
-                                }
-                                return response.json();
-                            })
-                            .then(data => {
-                                console.log('Server response:', data);
-                                if (data.status === 'success' && data.state) {
-                                    sessionStorage.setItem('locationDetected', 'true');
-                                    sessionStorage.setItem('savedState', data.state);
-                                    stateSelect.value = data.state;
-                                    ppaSearchForm.submit();
-                                } else {
-                                    console.warn('Geolocation failed to set state:', data.message);
-                                    attemptGeolocation(retryCount + 1, maxRetries);
-                                }
-                            })
-                            .catch(error => {
-                                console.error('Geolocation fetch error:', error.message || error);
-                                attemptGeolocation(retryCount + 1, maxRetries);
-                            });
-                        },
-                        (error) => {
-                            console.error('Geolocation error:', { code: error.code, message: error.message });
-                            if (error.code === error.PERMISSION_DENIED) {
-                                console.log('User denied geolocation permission.');
-                                alert('Geolocation permission denied. Please select your state manually.');
+            console.log(`Attempting geolocation (Attempt ${retryCount + 1}/${maxRetries})...`);
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        const lat = position.coords.latitude;
+                        const lon = position.coords.longitude;
+                        console.log('Geolocation success - Coordinates:', { lat, lon });
+
+                        fetch('/set_user_state/', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRFToken': '{{ csrf_token }}',
+                                'X-Requested-With': 'XMLHttpRequest',
+                                'Cache-Control': 'no-cache'
+                            },
+                            body: JSON.stringify({ lat, lon })
+                        })
+                        .then(response => {
+                            console.log('Fetch response:', { status: response.status, statusText: response.statusText });
+                            if (!response.ok) {
+                                throw new Error(`HTTP error! status: ${response.status} - ${response.statusText}`);
+                            }
+                            return response.json();
+                        })
+                        .then(data => {
+                            console.log('Server response:', data);
+                            if (data.status === 'success' && data.state) {
+                                sessionStorage.setItem('locationDetected', 'true');
+                                sessionStorage.setItem('savedState', data.state);
+                                stateSelect.value = data.state;
+                                ppaSearchForm.submit();
                             } else {
+                                console.warn('Geolocation failed to set state:', data.message);
                                 attemptGeolocation(retryCount + 1, maxRetries);
                             }
-                        },
-                        { timeout: 10000, maximumAge: 60000, enableHighAccuracy: true }
-                    );
-                } else {
-                    console.error('Geolocation is not supported by this browser.');
-                    alert('Geolocation is not supported. Please select your state manually.');
-                }
+                        })
+                        .catch(error => {
+                            console.error('Geolocation fetch error:', error.message || error);
+                            attemptGeolocation(retryCount + 1, maxRetries);
+                        });
+                    },
+                    (error) => {
+                        console.error('Geolocation error:', { code: error.code, message: error.message });
+                        if (error.code === error.PERMISSION_DENIED) {
+                            console.log('User denied geolocation permission.');
+                            alert('Geolocation permission denied. Please select your state manually.');
+                        } else {
+                            attemptGeolocation(retryCount + 1, maxRetries);
+                        }
+                    },
+                    { timeout: 5000, maximumAge: 60000, enableHighAccuracy: false }
+                );
             } else {
-                console.log('Location already detected, using saved state.');
-                const savedState = sessionStorage.getItem('savedState');
-                if (savedState && stateSelect.querySelector(`option[value="${savedState}"]`)) {
-                    stateSelect.value = savedState;
-                    if (!window.location.search) {
-                        ppaSearchForm.submit();
-                    }
-                }
+                console.error('Geolocation is not supported by this browser.');
+                alert('Geolocation is not supported. Please select your state manually.');
             }
         }
 
-        setTimeout(() => attemptGeolocation(), 1000);
+        // Run geolocation only if no saved state
+        const savedState = sessionStorage.getItem('savedState');
+        if (!savedState || !stateSelect.querySelector(`option[value="${savedState}"]`)) {
+            setTimeout(() => attemptGeolocation(), 1000);
+        } else {
+            stateSelect.value = savedState;
+            if (!window.location.search) {
+                ppaSearchForm.submit();
+            }
+        }
 
         const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
         const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => 
