@@ -1,5 +1,5 @@
 {% extends 'nysc/base.html' %}
-{% block title %}{{ ppa.name }} - NYSC Connect{% endblock %}
+{% block title %}{{ ppa.name }} -Corps Connect{% endblock %}
 {% block content %}
 {% load static %}
 
@@ -248,8 +248,8 @@
             shareBtn.addEventListener('click', function() {
                 const shareUrl = this.getAttribute('data-url');
                 const shareData = {
-                    title: "NYSC Connect - {{ ppa.name }}",
-                    text: "Check out this PPA on NYSC Connect: {{ ppa.name }}!",
+                    title: "Corps Connect - {{ ppa.name }}",
+                    text: "Check out this PPA on Corps Connect: {{ ppa.name }}!",
                     url: shareUrl
                 };
 
