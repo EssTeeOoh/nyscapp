@@ -157,7 +157,7 @@ class PPA(models.Model):
         ('NGO', 'Non-Governmental Organization'),
         ('Oil and Gas', 'Oil and Gas'),
         ('Media', 'Media'),
-        ('Agriculture', 'Food and Agriculture'),
+        ('Food and Agriculture', 'Food and Agriculture'),
         ('Legal', 'Legal'),
         ('Manufacturing', 'Manufacturing'),
         ('Hospitality', 'Hospitality'),
