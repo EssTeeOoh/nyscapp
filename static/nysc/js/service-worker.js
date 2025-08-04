@@ -1,4 +1,3 @@
-// static/nysc/js/service-worker.js
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open('corps-connect-v1').then((cache) => {
@@ -18,16 +17,47 @@ self.addEventListener('install', (event) => {
         '/static/nysc/js/ppa_finder.js',
         '/static/nysc/js/submit_ppa.js',
         '/static/nysc/js/base.js',
-        // Add other static assets or routes as needed
       ]);
     })
   );
 });
 
 self.addEventListener('fetch', (event) => {
+  // Skip cache for API endpoints
+  if (event.request.url.includes('/set_user_state/')) {
+    event.respondWith(
+      fetch(event.request, { cache: 'no-store' }).catch(() => {
+        return caches.match('/'); // Fallback to homepage if offline
+      })
+    );
+    return;
+  }
+
   event.respondWith(
     caches.match(event.request).then((response) => {
-      return response || fetch(event.request);
+      return response || fetch(event.request).then((networkResponse) => {
+        // Update cache for static assets
+        if (event.request.url.startsWith('/static/')) {
+          const clonedResponse = networkResponse.clone();
+          caches.open('corps-connect-v1').then((cache) => {
+            cache.put(event.request, clonedResponse);
+          });
+        }
+        return networkResponse;
+      });
+    }).catch(() => {
+      return caches.match('/'); // Fallback to homepage if offline
+    })
+  );
+});
+
+self.addEventListener('activate', (event) => {
+  event.waitUntil(
+    caches.keys().then((cacheNames) => {
+      return Promise.all(
+        cacheNames.filter((cacheName) => cacheName !== 'corps-connect-v1')
+          .map((cacheName) => caches.delete(cacheName))
+      );
     })
   );
 });

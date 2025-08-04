@@ -250,6 +250,13 @@
                 .then(() => console.log('Service Worker registered'))
                 .catch((error) => console.error('Service Worker registration failed:', error));
         }
+
+        // Add visibilitychange event listener
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'visible') {
+                window.location.reload(); // Reload to rehydrate the app
+            }
+        });
     </script>
     <!-- Block for child template scripts -->
     {% block extra_scripts %}

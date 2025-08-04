@@ -233,12 +233,14 @@
                             const lon = position.coords.longitude;
                             console.log('Geolocation success - Coordinates:', { lat, lon });
 
+                            // Bypass cache for dynamic endpoint
                             fetch('/set_user_state/', {
                                 method: 'POST',
                                 headers: {
                                     'Content-Type': 'application/json',
                                     'X-CSRFToken': '{{ csrf_token }}',
-                                    'X-Requested-With': 'XMLHttpRequest'
+                                    'X-Requested-With': 'XMLHttpRequest',
+                                    'Cache-Control': 'no-cache' // Prevent caching
                                 },
                                 body: JSON.stringify({ lat, lon })
                             })
