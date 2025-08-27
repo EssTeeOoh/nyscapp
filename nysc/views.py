@@ -36,6 +36,11 @@ from django.views.decorators.cache import never_cache
 logger = logging.getLogger(__name__)
 
 
+
+
+def health_check(request):
+    return JsonResponse({"status": "healthy"})
+
 @login_required
 @require_GET
 def check_duplicate_ppa(request):

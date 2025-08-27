@@ -7,8 +7,8 @@ from .views import (
     verify_email, forgot_password, resend_verification, CustomPasswordResetConfirmView,
     set_user_state, profile_view, profile_edit, ppa_edit, CustomLoginView, follow_user, unfollow_user, 
     request_ppa_verification, leaderboard, check_notifications, notifications, clear_notifications, mark_notifications_read, delete_review, marketplace_coming_soon, marketplace_subscribe,
-    marketplace_feedback, bookmarks_list, toggle_bookmark, check_bookmark, camp_info, delete_ppa, check_duplicate_ppa
-    
+    marketplace_feedback, bookmarks_list, toggle_bookmark, check_bookmark, camp_info, delete_ppa, check_duplicate_ppa, health_check
+
 )
 from django.contrib.auth.views import LogoutView
 
@@ -48,6 +48,7 @@ urlpatterns = [
     path('ppa/<int:ppa_id>/toggle-bookmark/', toggle_bookmark, name='toggle_bookmark'),
     path('ppa/<int:ppa_id>/check-bookmark/', check_bookmark, name='check_bookmark'),
     path('camp-info/', camp_info, name='camp_info'),
+    path('health/', health_check, name='health_check'),
 
 
 ]
